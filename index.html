@@ -443,9 +443,54 @@
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
     .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    /* ─── Splash / Tap screen ─── */
+    .splash {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: var(--black);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: opacity 0.8s ease;
+    }
+
+    .splash.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .splash-title {
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1.5rem;
+    }
+
+    .splash-hint {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.2em;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.7; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- Splash Screen -->
+  <div class="splash" id="splash" onclick="initSite()">
+    <div class="splash-title">Tim L.</div>
+    <div class="splash-hint">tap anywhere</div>
+  </div>
 
   <!-- Video Background -->
   <div class="video-bg">
@@ -576,6 +621,22 @@
   </div>
 
   <script>
+    // ─── Splash / Init ───
+    let audioCtx = null;
+
+    function initSite() {
+      // Unlock audio
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioCtx.resume();
+
+      // Start background video
+      const bgVid = document.querySelector('.video-bg video');
+      bgVid.play();
+
+      // Hide splash
+      document.getElementById('splash').classList.add('hidden');
+    }
+
     // ─── Mosaic ───
     const canvas = document.getElementById('mosaicCanvas');
     const ctx = canvas.getContext('2d');
