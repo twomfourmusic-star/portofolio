@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tim L. — music & sound</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --white: #e8e8e8;
+      --black: #0a0a0a;
+      --glass: rgba(255, 255, 255, 0.06);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --text-muted: rgba(255, 255, 255, 0.5);
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* ─── Video Background ─── */
+    .video-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .video-bg video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .video-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.25);
+      transition: background 1.2s ease;
+      z-index: 3;
+    }
+
+    .mosaic-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 1.5s ease;
+      pointer-events: none;
+    }
+
+    body.nav-active .mosaic-canvas {
+      opacity: 1;
+    }
+
+    body.nav-active .video-bg::after {
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    /* ─── Start Page ─── */
+    .start-page {
+      position: relative;
+      z-index: 4;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      padding: clamp(2rem, 5vh, 4rem) clamp(2rem, 5vw, 4rem);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    body.nav-active .start-page {
+      opacity: 0;
+      transform: translateY(-40px);
+      pointer-events: none;
+    }
+
+    .start-page h1 {
+      font-size: clamp(3rem, 10vw, 8rem);
+      font-weight: 700;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      color: #fff;
+    }
+
+    .start-page .subtitle {
+      font-size: clamp(0.8rem, 1.5vw, 1rem);
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-top: 0.8rem;
+      letter-spacing: 0.15em;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .start-page .subtitle:hover { color: #fff; }
+
+    /* ─── Arrows ─── */
+    .scroll-arrow {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      cursor: pointer;
+      opacity: 0.4;
+      transition: opacity 0.6s ease;
+      animation: arrow-bounce 2.5s ease-in-out infinite;
+    }
+    .scroll-arrow:hover { opacity: 1; }
+    body.nav-active .scroll-arrow.arrow-down { opacity: 0; pointer-events: none; }
+
+    .scroll-arrow svg, .arrow-up svg {
+      width: 28px; height: 28px;
+      stroke: #fff; fill: none; stroke-width: 1.5;
+    }
+
+    .arrow-up {
+      position: fixed;
+      top: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 15;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.6s ease;
+      animation: arrow-bounce-up 2.5s ease-in-out infinite;
+    }
+    .arrow-up svg { width: 24px; height: 24px; }
+    body.nav-active .arrow-up { opacity: 0.4; pointer-events: auto; }
+    body.nav-active .arrow-up:hover { opacity: 1; }
+    body.panel-open .arrow-up { opacity: 0; pointer-events: none; }
+
+    @keyframes arrow-bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(10px); }
+    }
+    @keyframes arrow-bounce-up {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-8px); }
+    }
+
+    /* ─── Navigation ─── */
+    .nav-overlay {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: center;
+      gap: clamp(1.5rem, 5vw, 4rem);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.8s ease 0.3s;
+    }
+    body.nav-active .nav-overlay { opacity: 1; pointer-events: auto; }
+
+    .nav-item {
+      font-size: clamp(1.2rem, 3vw, 2.2rem);
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.35);
+      cursor: pointer;
+      transition: color 0.3s, transform 0.3s;
+      user-select: none;
+      position: relative;
+    }
+    .nav-item:hover { color: #fff; transform: scale(1.05); }
+    .nav-item::after {
+      content: ''; position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 1px; background: #fff; transition: width 0.3s;
+    }
+    .nav-item:hover::after { width: 100%; }
+
+    .back-btn {
+      position: fixed; top: 2rem; left: 2rem; z-index: 100;
+      background: none; border: none;
+      color: rgba(255,255,255,0.4);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem; letter-spacing: 0.1em;
+      cursor: pointer;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s, color 0.3s;
+    }
+    .back-btn:hover { color: #fff; }
+    body.panel-open .back-btn { opacity: 1; pointer-events: auto; }
+
+    /* ─── Panels ─── */
+    .panel {
+      position: fixed; inset: 0; z-index: 20;
+      overflow-y: auto;
+      padding: clamp(4rem, 8vh, 6rem) clamp(2rem, 8vw, 8rem);
+      opacity: 0; pointer-events: none;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .panel.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .panel::-webkit-scrollbar { width: 3px; }
+    .panel::-webkit-scrollbar-track { background: transparent; }
+    .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+    .section-header {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 700;
+      margin-bottom: 2.5rem;
+      color: #fff;
+    }
+
+    /* ─── About ─── */
+    .about-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem; align-items: start;
+    }
+    @media (max-width: 768px) { .about-content { grid-template-columns: 1fr; } }
+
+    .about-text {
+      font-size: clamp(0.85rem, 1.4vw, 1rem);
+      font-weight: 400; line-height: 1.9;
+      color: rgba(255,255,255,0.65);
+    }
+    .about-video {
+      width: 100%; aspect-ratio: 9/16; max-height: 500px;
+      object-fit: cover; border-radius: 4px;
+      border: 1px solid var(--glass-border);
+    }
+
+    /* ─── Projects: compact tiles ─── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .project-tile {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .project-tile:hover {
+      border-color: rgba(255,255,255,0.25);
+      transform: translateY(-2px);
+    }
+
+    .project-thumb {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+    .project-tile:hover .project-thumb { opacity: 1; }
+
+    /* Spotify thumbnail placeholder */
+    .project-thumb-placeholder {
+      width: 100%;
+      aspect-ratio: 4/3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.03);
+      font-size: 2rem;
+      opacity: 0.4;
+    }
+
+    .project-tile-title {
+      padding: 0.6rem 0.8rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.3;
+    }
+
+    /* ─── Project Modal ─── */
+    .project-modal-backdrop {
+      position: fixed; inset: 0; z-index: 50;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    .project-modal-backdrop.open {
+      opacity: 1; pointer-events: auto;
+    }
+
+    .project-modal {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.95);
+      z-index: 51;
+      background: rgba(20, 20, 20, 0.95);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      width: min(90vw, 700px);
+      max-height: 85vh;
+      overflow-y: auto;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .project-modal.open {
+      opacity: 1; pointer-events: auto;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .project-modal::-webkit-scrollbar { width: 3px; }
+    .project-modal::-webkit-scrollbar-track { background: transparent; }
+    .project-modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: none; border: none;
+      color: rgba(255,255,255,0.4);
+      font-size: 1.5rem; cursor: pointer;
+      transition: color 0.3s;
+      z-index: 5;
+    }
+    .modal-close:hover { color: #fff; }
+
+    .modal-media {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      display: block;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .modal-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .modal-gallery img {
+      width: 100%;
+      aspect-ratio: 16/10;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--glass-border);
+      opacity: 0.85;
+      transition: opacity 0.3s;
+      cursor: pointer;
+    }
+
+    .modal-gallery img:hover {
+      opacity: 1;
+    }
+
+    .modal-body {
+      padding: 1.5rem 2rem 2rem;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.3rem;
+    }
+
+    .modal-tag {
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      margin-bottom: 1.2rem;
+    }
+
+    .modal-desc {
+      font-size: 0.85rem;
+      font-weight: 400;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .modal-spotify {
+      margin-top: 1rem;
+    }
+    .modal-spotify iframe {
+      width: 100%;
+      border-radius: 8px;
+      border: none;
+    }
+
+    /* ─── Contact ─── */
+    .contact-panel-inner {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: calc(100vh - 12rem);
+    }
+    .contact-list {
+      display: flex; flex-direction: column;
+      gap: 1.5rem; align-items: center;
+      width: 100%; max-width: 450px;
+    }
+    .contact-link {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; text-decoration: none; color: var(--white);
+      padding: 1.5rem 2rem;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .contact-link:hover {
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-2px);
+    }
+    .contact-label { font-size: 0.95rem; font-weight: 700; }
+    .contact-value {
+      font-size: 0.8rem; font-weight: 400;
+      color: var(--text-muted); margin-top: 0.2rem;
+    }
+    .copy-btn {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.4);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.08em;
+      padding: 0.4rem 0.8rem; border-radius: 4px;
+      cursor: pointer; flex-shrink: 0;
+      transition: color 0.3s, border-color 0.3s;
+    }
+    .copy-btn:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
+    .copy-btn.copied {
+      color: rgba(100, 255, 150, 0.8);
+      border-color: rgba(100, 255, 150, 0.3);
+    }
+
+    /* ─── Fade-in ─── */
+    .fade-up {
+      opacity: 0; transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <!-- Video Background -->
+  <div class="video-bg">
+    <video autoplay muted loop playsinline>
+      <source src="assets/video/bg.mp4" type="video/mp4">
+    </video>
+    <canvas class="mosaic-canvas" id="mosaicCanvas"></canvas>
+  </div>
+
+  <!-- Start Page -->
+  <div class="start-page">
+    <h1>Tim L.</h1>
+    <div class="subtitle" onclick="goToProjects()">music & sound</div>
+  </div>
+
+  <div class="scroll-arrow arrow-down" onclick="enterSite()">
+    <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  </div>
+
+  <div class="arrow-up" onclick="exitNav()">
+    <svg viewBox="0 0 24 24"><polyline points="6 15 12 9 18 15"></polyline></svg>
+  </div>
+
+  <!-- Navigation -->
+  <div class="nav-overlay">
+    <div class="nav-item" onclick="openPanel('about')">about me</div>
+    <div class="nav-item" onclick="openPanel('projects')">projects</div>
+    <div class="nav-item" onclick="openPanel('contact')">contact</div>
+  </div>
+
+  <button class="back-btn" onclick="goBack()">&larr; back</button>
+
+  <!-- About -->
+  <div class="panel" id="panel-about">
+    <h2 class="section-header fade-up">about me</h2>
+    <div class="about-content">
+      <div class="about-text fade-up">
+        i've been working with music and sound since 2020 and earned my degree in sound engineering in 2024 in kyiv.
+        <br><br>
+        i'm always exploring something new, and solving unusual problems brings me genuine joy. i love bold, provocative solutions and focus on results, not on just killing time.
+        <br><br>
+        i'm open to ideas and believe that good communication is the key to success.
+      </div>
+      <video class="about-video fade-up" autoplay muted loop playsinline>
+        <source src="assets/video/about.mov" type="video/mp4">
+      </video>
+    </div>
+  </div>
+
+  <!-- Projects -->
+  <div class="panel" id="panel-projects">
+    <h2 class="section-header fade-up" style="text-align:center">projects</h2>
+    <div class="projects-grid">
+
+      <div class="project-tile fade-up"
+           onclick="openModal('dubbing & editing for amopictures','sound design / dubbing','mixing and mastering of dubbing (lip-syncing, frequency, dynamic, and spatial processing, etc.)','video','assets/video/amo-dub.mp4')">
+        <img class="project-thumb" src="assets/img/amo-preview.jpg" alt="AMOpictures">
+        <div class="project-tile-title">dubbing & editing for amopictures</div>
+      </div>
+
+      <div class="project-tile fade-up"
+           onclick="openModal('&quot;made in ukraine&quot; show','show / sound design','sound design and recording of live instruments from scratch for a YT channel','video','assets/video/ukraine-show.mp4',['assets/img/ukraine-preview-main.png','assets/img/ukraine-extra.jpg'])">
+        <img class="project-thumb" src="assets/img/ukraine-preview-main.png" alt="Made in Ukraine">
+        <div class="project-tile-title">"made in ukraine" show</div>
+      </div>
+
+      <div class="project-tile fade-up"
+           onclick="openModal('travel show kamon','sound / music editing','complete sound and music editing for 62 episodes of the show for the WE UA PLUS channel; served as music editor and sound engineer. mixing and mastering to EBU128 standards','img','assets/img/kamon-preview.jpg',['assets/img/kamon.jpg','assets/img/kamon-2.jpg'])">
+        <img class="project-thumb" src="assets/img/kamon-preview.jpg" alt="Kamon">
+        <div class="project-tile-title">travel show kamon</div>
+      </div>
+
+      <div class="project-tile fade-up"
+           onclick="openModal('EP &quot;musik electronique&quot;','music / production','all songs arranging, recording, and co-mixing by me','spotify','https://open.spotify.com/embed/album/3CmgcfkNiIE9c4XPkhsDQI?utm_source=generator&theme=0')">
+        <img class="project-thumb" src="assets/img/musik-cover.jpg" alt="Musik Electronique">
+        <div class="project-tile-title">EP "musik electronique"</div>
+      </div>
+
+      <div class="project-tile fade-up"
+           onclick="openModal('other music','music / co-production','co-produced and recorded by me','spotify','https://open.spotify.com/embed/track/32UH904sMUmS66BmMyojUs?utm_source=generator&theme=0')">
+        <img class="project-thumb" src="assets/img/body-curve.jpg" alt="Other Music">
+        <div class="project-tile-title">other music</div>
+      </div>
+
+      <div class="project-tile fade-up"
+           onclick="openModal('sounds','sfx / ui','ui sounds and sfx made by myself at this site ;)','none','')">
+        <img class="project-thumb" src="assets/img/sounds-bg.png" alt="Sounds">
+        <div class="project-tile-title">sounds & sfx</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Contact -->
+  <div class="panel" id="panel-contact">
+    <div class="contact-panel-inner">
+      <h2 class="section-header fade-up" style="text-align:center">contact</h2>
+      <div class="contact-list">
+        <div class="contact-link fade-up" onclick="copyEmail(event)">
+          <div>
+            <div class="contact-label">email</div>
+            <div class="contact-value">twomfourmusic@gmail.com</div>
+          </div>
+          <button class="copy-btn" id="copyBtn">copy</button>
+        </div>
+        <a href="https://t.me/fameandlame" target="_blank" class="contact-link fade-up">
+          <div>
+            <div class="contact-label">telegram</div>
+            <div class="contact-value">@fameandlame</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Modal -->
+  <div class="project-modal-backdrop" id="modalBackdrop" onclick="closeModal()"></div>
+  <div class="project-modal" id="projectModal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div id="modalMediaContainer"></div>
+    <div class="modal-body">
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-tag" id="modalTag"></div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <div class="modal-gallery" id="modalGallery"></div>
+      <div class="modal-spotify" id="modalSpotify"></div>
+    </div>
+  </div>
+
+  <script>
+    // ─── Mosaic ───
+    const canvas = document.getElementById('mosaicCanvas');
+    const ctx = canvas.getContext('2d');
+    const bgVideo = document.querySelector('.video-bg video');
+    let mosaicActive = false, mosaicRAF = null;
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.offsetWidth;
+      canvas.height = canvas.parentElement.offsetHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function drawMosaic() {
+      if (!mosaicActive) return;
+      const px = 14;
+      const w = Math.ceil(canvas.width / px);
+      const h = Math.ceil(canvas.height / px);
+      ctx.drawImage(bgVideo, 0, 0, w, h);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(canvas, 0, 0, w, h, 0, 0, canvas.width, canvas.height);
+      mosaicRAF = requestAnimationFrame(drawMosaic);
+    }
+
+    function startMosaic() { if (mosaicActive) return; mosaicActive = true; drawMosaic(); }
+    function stopMosaic() {
+      mosaicActive = false;
+      if (mosaicRAF) cancelAnimationFrame(mosaicRAF);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // ─── Navigation ───
+    let currentPanel = null, scrollAccum = 0;
+
+    window.addEventListener('wheel', (e) => {
+      if (document.body.classList.contains('nav-active') && !document.body.classList.contains('panel-open')) {
+        if (e.deltaY < 0) {
+          scrollAccum -= e.deltaY;
+          if (scrollAccum > 100) { exitNav(); scrollAccum = 0; }
+          return;
+        }
+        scrollAccum = 0; return;
+      }
+      if (!document.body.classList.contains('nav-active')) {
+        if (e.deltaY > 0) {
+          scrollAccum += e.deltaY;
+          if (scrollAccum > 100) { enterSite(); scrollAccum = 0; }
+        } else { scrollAccum = 0; }
+      }
+    });
+
+    let touchStartY = 0;
+    window.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
+    window.addEventListener('touchend', (e) => {
+      const diff = touchStartY - e.changedTouches[0].clientY;
+      if (!document.body.classList.contains('nav-active') && diff > 60) enterSite();
+      if (document.body.classList.contains('nav-active') && !document.body.classList.contains('panel-open') && diff < -60) exitNav();
+    });
+
+    function enterSite() { document.body.classList.add('nav-active'); startMosaic(); }
+    function exitNav() { document.body.classList.remove('nav-active'); stopMosaic(); scrollAccum = 0; }
+
+    function goToProjects() { enterSite(); setTimeout(() => openPanel('projects'), 600); }
+
+    function openPanel(name) {
+      document.querySelector('.nav-overlay').style.opacity = '0';
+      document.querySelector('.nav-overlay').style.pointerEvents = 'none';
+      const panel = document.getElementById('panel-' + name);
+      panel.classList.add('active');
+      document.body.classList.add('panel-open');
+      currentPanel = name;
+      setTimeout(() => {
+        panel.querySelectorAll('.fade-up').forEach((el, i) => {
+          setTimeout(() => el.classList.add('visible'), i * 100);
+        });
+      }, 100);
+    }
+
+    function goBack() {
+      if (currentPanel) {
+        const panel = document.getElementById('panel-' + currentPanel);
+        panel.classList.remove('active');
+        panel.querySelectorAll('.fade-up').forEach(el => el.classList.remove('visible'));
+      }
+      document.body.classList.remove('panel-open');
+      currentPanel = null;
+      setTimeout(() => {
+        document.querySelector('.nav-overlay').style.opacity = '';
+        document.querySelector('.nav-overlay').style.pointerEvents = '';
+      }, 200);
+    }
+
+    // ─── Project Modal ───
+    function openModal(title, tag, desc, type, src, gallery) {
+      const container = document.getElementById('modalMediaContainer');
+      const spotify = document.getElementById('modalSpotify');
+      const galleryEl = document.getElementById('modalGallery');
+      container.innerHTML = '';
+      spotify.innerHTML = '';
+      galleryEl.innerHTML = '';
+
+      if (type === 'video') {
+        container.innerHTML = '<video class="modal-media" autoplay muted loop playsinline><source src="'+src+'" type="video/mp4"></video>';
+      } else if (type === 'img') {
+        container.innerHTML = '<img class="modal-media" src="'+src+'">';
+      } else if (type === 'spotify') {
+        const isAlbum = src.includes('/album/');
+        spotify.innerHTML = '<iframe src="'+src+'" height="'+(isAlbum ? 352 : 152)+'" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
+      }
+
+      if (gallery && gallery.length) {
+        gallery.forEach(img => {
+          galleryEl.innerHTML += '<img src="'+img+'" onclick="document.querySelector(\'.modal-media\').src=\''+img+'\'">';
+        });
+      }
+
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalTag').textContent = tag;
+      document.getElementById('modalDesc').textContent = desc;
+
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.getElementById('projectModal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modalBackdrop').classList.remove('open');
+      document.getElementById('projectModal').classList.remove('open');
+      setTimeout(() => {
+        document.getElementById('modalMediaContainer').innerHTML = '';
+        document.getElementById('modalSpotify').innerHTML = '';
+      }, 400);
+    }
+
+    function copyEmail(e) {
+      e.preventDefault();
+      navigator.clipboard.writeText('twomfourmusic@gmail.com').then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = 'copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (document.getElementById('projectModal').classList.contains('open')) closeModal();
+        else if (currentPanel) goBack();
+        else if (document.body.classList.contains('nav-active')) exitNav();
+      }
+    });
+  </script>
+
+</body>
+</html>
