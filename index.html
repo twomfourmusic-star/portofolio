@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tim L. — music & sound</title>
+  <title>Tim Liubimov — music & sound</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
 
@@ -77,7 +77,7 @@
       justify-content: flex-start;
       align-items: flex-start;
       padding: clamp(2rem, 5vh, 4rem) clamp(2rem, 5vw, 4rem);
-      transition: opacity 0.8s ease, transform 0.8s ease;
+      transition: opacity 1.2s ease, transform 1.2s ease;
     }
 
     body.nav-active .start-page {
@@ -89,9 +89,20 @@
     .start-page h1 {
       font-size: clamp(3rem, 10vw, 8rem);
       font-weight: 700;
-      line-height: 0.95;
+      line-height: 1;
       letter-spacing: -0.03em;
       color: #fff;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .start-page h1 span {
+      display: block;
+      padding-left: 0.15em;
+    }
+
+    .start-page h1:hover {
+      color: rgba(255,255,255,0.7);
     }
 
     .start-page .subtitle {
@@ -199,6 +210,10 @@
       opacity: 0; pointer-events: none;
       transform: translateY(30px);
       transition: opacity 0.6s ease, transform 0.6s ease;
+      /* darker backdrop for readability */
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
     }
     .panel.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
     .panel::-webkit-scrollbar { width: 3px; }
@@ -223,7 +238,7 @@
     .about-text {
       font-size: clamp(0.85rem, 1.4vw, 1rem);
       font-weight: 400; line-height: 1.9;
-      color: rgba(255,255,255,0.65);
+      color: rgba(255,255,255,0.75);
     }
     .about-video {
       width: 100%; aspect-ratio: 9/16; max-height: 500px;
@@ -263,7 +278,6 @@
     }
     .project-tile:hover .project-thumb { opacity: 1; }
 
-    /* Spotify thumbnail placeholder */
     .project-thumb-placeholder {
       width: 100%;
       aspect-ratio: 4/3;
@@ -353,43 +367,29 @@
       cursor: pointer;
     }
 
-    .modal-gallery img:hover {
-      opacity: 1;
-    }
+    .modal-gallery img:hover { opacity: 1; }
 
-    .modal-body {
-      padding: 1.5rem 2rem 2rem;
-    }
+    .modal-body { padding: 1.5rem 2rem 2rem; }
 
     .modal-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 0.3rem;
+      font-size: 1.1rem; font-weight: 700;
+      color: #fff; margin-bottom: 0.3rem;
     }
 
     .modal-tag {
-      font-size: 0.7rem;
-      font-weight: 400;
+      font-size: 0.7rem; font-weight: 400;
       color: var(--text-muted);
-      letter-spacing: 0.08em;
-      margin-bottom: 1.2rem;
+      letter-spacing: 0.08em; margin-bottom: 1.2rem;
     }
 
     .modal-desc {
-      font-size: 0.85rem;
-      font-weight: 400;
-      line-height: 1.8;
-      color: rgba(255,255,255,0.6);
+      font-size: 0.85rem; font-weight: 400;
+      line-height: 1.8; color: rgba(255,255,255,0.6);
     }
 
-    .modal-spotify {
-      margin-top: 1rem;
-    }
+    .modal-spotify { margin-top: 1rem; }
     .modal-spotify iframe {
-      width: 100%;
-      border-radius: 8px;
-      border: none;
+      width: 100%; border-radius: 8px; border: none;
     }
 
     /* ─── Contact ─── */
@@ -444,40 +444,28 @@
     }
     .fade-up.visible { opacity: 1; transform: translateY(0); }
 
-    /* ─── Splash / Tap screen ─── */
+    /* ─── Splash ─── */
     .splash {
-      position: fixed;
-      inset: 0;
-      z-index: 999;
+      position: fixed; inset: 0; z-index: 999;
       background: var(--black);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       cursor: pointer;
       transition: opacity 0.8s ease;
     }
-
-    .splash.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
+    .splash.hidden { opacity: 0; pointer-events: none; }
 
     .splash-title {
       font-size: clamp(2rem, 6vw, 4rem);
-      font-weight: 700;
-      color: #fff;
+      font-weight: 700; color: #fff;
       margin-bottom: 1.5rem;
     }
-
     .splash-hint {
-      font-size: 0.8rem;
-      font-weight: 400;
+      font-size: 0.8rem; font-weight: 400;
       color: rgba(255,255,255,0.3);
       letter-spacing: 0.2em;
       animation: pulse 2s ease-in-out infinite;
     }
-
     @keyframes pulse {
       0%, 100% { opacity: 0.3; }
       50% { opacity: 0.7; }
@@ -488,7 +476,7 @@
 
   <!-- Splash Screen -->
   <div class="splash" id="splash" onclick="initSite()">
-    <div class="splash-title">Tim L.</div>
+    <div class="splash-title">Tim Liubimov</div>
     <div class="splash-hint">tap anywhere</div>
   </div>
 
@@ -501,8 +489,8 @@
   </div>
 
   <!-- Start Page -->
-  <div class="start-page">
-    <h1>Tim L.</h1>
+  <div class="start-page" onclick="startPageClick(event)">
+    <h1 onclick="goToAbout()">Tim<span>Liubimov</span></h1>
     <div class="subtitle" onclick="goToProjects()">music & sound</div>
   </div>
 
@@ -515,7 +503,7 @@
   </div>
 
   <!-- Navigation -->
-  <div class="nav-overlay">
+  <div class="nav-overlay" onclick="navBgClick(event)">
     <div class="nav-item" onclick="openPanel('about')">about me</div>
     <div class="nav-item" onclick="openPanel('projects')">projects</div>
     <div class="nav-item" onclick="openPanel('contact')">contact</div>
@@ -524,7 +512,7 @@
   <button class="back-btn" onclick="goBack()">&larr; back</button>
 
   <!-- About -->
-  <div class="panel" id="panel-about">
+  <div class="panel" id="panel-about" onclick="panelBgClick(event)">
     <h2 class="section-header fade-up">about me</h2>
     <div class="about-content">
       <div class="about-text fade-up">
@@ -541,7 +529,7 @@
   </div>
 
   <!-- Projects -->
-  <div class="panel" id="panel-projects">
+  <div class="panel" id="panel-projects" onclick="panelBgClick(event)">
     <h2 class="section-header fade-up" style="text-align:center">projects</h2>
     <div class="projects-grid">
 
@@ -585,18 +573,18 @@
   </div>
 
   <!-- Contact -->
-  <div class="panel" id="panel-contact">
-    <div class="contact-panel-inner">
+  <div class="panel" id="panel-contact" onclick="panelBgClick(event)">
+    <div class="contact-panel-inner" onclick="panelBgClick(event)">
       <h2 class="section-header fade-up" style="text-align:center">contact</h2>
       <div class="contact-list">
-        <div class="contact-link fade-up" onclick="copyEmail(event)">
+        <a href="mailto:twomfourmusic@gmail.com" class="contact-link fade-up" onclick="event.stopPropagation()">
           <div>
             <div class="contact-label">email</div>
             <div class="contact-value">twomfourmusic@gmail.com</div>
           </div>
-          <button class="copy-btn" id="copyBtn">copy</button>
-        </div>
-        <a href="https://t.me/fameandlame" target="_blank" class="contact-link fade-up">
+          <button class="copy-btn" id="copyBtn" onclick="copyEmail(event)">copy</button>
+        </a>
+        <a href="https://t.me/fameandlame" target="_blank" class="contact-link fade-up" onclick="event.stopPropagation()">
           <div>
             <div class="contact-label">telegram</div>
             <div class="contact-value">@fameandlame</div>
@@ -625,15 +613,10 @@
     let audioCtx = null;
 
     function initSite() {
-      // Unlock audio
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       audioCtx.resume();
-
-      // Start background video
       const bgVid = document.querySelector('.video-bg video');
       bgVid.play();
-
-      // Hide splash
       document.getElementById('splash').classList.add('hidden');
     }
 
@@ -697,8 +680,29 @@
     });
 
     function enterSite() { document.body.classList.add('nav-active'); startMosaic(); }
-    function exitNav() { document.body.classList.remove('nav-active'); stopMosaic(); scrollAccum = 0; }
 
+    function exitNav() {
+      // Smooth: fade mosaic out via CSS transition, then stop drawing
+      document.body.classList.remove('nav-active');
+      // Keep drawing mosaic during fade-out, stop after transition
+      setTimeout(() => {
+        if (!document.body.classList.contains('nav-active')) stopMosaic();
+      }, 1500);
+      scrollAccum = 0;
+    }
+
+    function startPageClick(e) {
+      // If clicked on h1 or subtitle, their own onclick handles it
+      if (e.target.closest('h1') || e.target.closest('.subtitle')) return;
+      enterSite();
+    }
+
+    function navBgClick(e) {
+      // Only if clicked on the overlay itself, not on nav items
+      if (e.target === e.currentTarget) exitNav();
+    }
+
+    function goToAbout() { enterSite(); setTimeout(() => openPanel('about'), 600); }
     function goToProjects() { enterSite(); setTimeout(() => openPanel('projects'), 600); }
 
     function openPanel(name) {
@@ -720,6 +724,8 @@
         const panel = document.getElementById('panel-' + currentPanel);
         panel.classList.remove('active');
         panel.querySelectorAll('.fade-up').forEach(el => el.classList.remove('visible'));
+        // Reset scroll position
+        panel.scrollTop = 0;
       }
       document.body.classList.remove('panel-open');
       currentPanel = null;
@@ -727,6 +733,13 @@
         document.querySelector('.nav-overlay').style.opacity = '';
         document.querySelector('.nav-overlay').style.pointerEvents = '';
       }, 200);
+    }
+
+    // Click empty space in panel to go back
+    function panelBgClick(e) {
+      if (e.target === e.currentTarget) {
+        goBack();
+      }
     }
 
     // ─── Project Modal ───
@@ -772,6 +785,7 @@
 
     function copyEmail(e) {
       e.preventDefault();
+      e.stopPropagation();
       navigator.clipboard.writeText('twomfourmusic@gmail.com').then(() => {
         const btn = document.getElementById('copyBtn');
         btn.textContent = 'copied';
