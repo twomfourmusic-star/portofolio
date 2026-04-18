@@ -110,6 +110,7 @@
       font-weight: 400;
       color: var(--text-muted);
       margin-top: 0.8rem;
+      margin-left: calc(clamp(3rem, 10vw, 8rem) * 0.15);
       letter-spacing: 0.15em;
       cursor: pointer;
       transition: color 0.3s;
@@ -127,7 +128,10 @@
       cursor: pointer;
       opacity: 0.4;
       transition: opacity 0.6s ease;
-      animation: arrow-bounce 2.5s ease-in-out infinite;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.55rem;
     }
     .scroll-arrow:hover { opacity: 1; }
     body.nav-active .scroll-arrow.arrow-down { opacity: 0; pointer-events: none; }
@@ -135,6 +139,18 @@
     .scroll-arrow svg, .arrow-up svg {
       width: 28px; height: 28px;
       stroke: #fff; fill: none; stroke-width: 1.5;
+    }
+
+    .scroll-arrow svg { animation: arrow-bounce 2.5s ease-in-out infinite; }
+
+    .scroll-hint {
+      font-size: 0.65rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.25em;
+      text-transform: lowercase;
+      white-space: nowrap;
+      pointer-events: none;
     }
 
     .arrow-up {
@@ -155,8 +171,8 @@
     body.panel-open .arrow-up { opacity: 0; pointer-events: none; }
 
     @keyframes arrow-bounce {
-      0%, 100% { transform: translateX(-50%) translateY(0); }
-      50% { transform: translateX(-50%) translateY(10px); }
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(10px); }
     }
     @keyframes arrow-bounce-up {
       0%, 100% { transform: translateX(-50%) translateY(0); }
@@ -274,9 +290,13 @@
       object-fit: cover;
       display: block;
       opacity: 0.7;
-      transition: opacity 0.3s;
+      filter: grayscale(1);
+      transition: opacity 0.3s, filter 0.4s ease;
     }
-    .project-tile:hover .project-thumb { opacity: 1; }
+    .project-tile:hover .project-thumb {
+      opacity: 1;
+      filter: grayscale(0);
+    }
 
     .project-thumb-placeholder {
       width: 100%;
@@ -439,8 +459,8 @@
 
     /* ─── Fade-in ─── */
     .fade-up {
-      opacity: 0; transform: translateY(20px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
+      opacity: 0; transform: translateY(14px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
     }
     .fade-up.visible { opacity: 1; transform: translateY(0); }
 
@@ -470,6 +490,54 @@
       0%, 100% { opacity: 0.3; }
       50% { opacity: 0.7; }
     }
+
+    /* ─── Audio Toggles ─── */
+    .audio-toggles {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 60;
+      display: flex;
+      gap: 0.6rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.6s ease 0.2s;
+    }
+    body.site-entered .audio-toggles {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .audio-btn {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: rgba(255,255,255,0.55);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      transition: color 0.3s, border-color 0.3s, background 0.3s;
+    }
+    .audio-btn:hover {
+      color: #fff;
+      border-color: rgba(255,255,255,0.3);
+    }
+    .audio-btn svg { width: 16px; height: 16px; fill: currentColor; }
+    .audio-btn.muted { color: rgba(255,255,255,0.18); }
+    .audio-btn.muted::after {
+      content: '';
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 24px; height: 1px;
+      background: rgba(255,255,255,0.45);
+      transform: translate(-50%, -50%) rotate(-45deg);
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -478,6 +546,24 @@
   <div class="splash" id="splash" onclick="initSite()">
     <div class="splash-title">Tim Liubimov</div>
     <div class="splash-hint">tap anywhere</div>
+  </div>
+
+  <!-- Audio Toggles -->
+  <div class="audio-toggles" id="audioToggles">
+    <button class="audio-btn" id="sfxToggle" onclick="toggleSfx()" title="ui sounds">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 9 H8 L13 5 V19 L8 15 H4 Z" fill="currentColor" stroke="currentColor"/>
+        <path d="M16.5 9.2 A4 4 0 0 1 16.5 14.8"/>
+        <path d="M19 6.5 A7.5 7.5 0 0 1 19 17.5"/>
+      </svg>
+    </button>
+    <button class="audio-btn" id="musicToggle" onclick="toggleMusic()" title="music">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 17 V5 L20 3 V15" fill="none"/>
+        <circle cx="6" cy="17" r="3" fill="none"/>
+        <circle cx="17" cy="15" r="3" fill="none"/>
+      </svg>
+    </button>
   </div>
 
   <!-- Video Background -->
@@ -495,6 +581,7 @@
   </div>
 
   <div class="scroll-arrow arrow-down" onclick="enterSite()">
+    <span class="scroll-hint">swipe or click</span>
     <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
   </div>
 
@@ -615,9 +702,167 @@
     function initSite() {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       audioCtx.resume();
+      loadSfx();
+      initMusic();
       const bgVid = document.querySelector('.video-bg video');
       bgVid.play();
       document.getElementById('splash').classList.add('hidden');
+      document.body.classList.add('site-entered');
+      updateAudioBtnStates();
+    }
+
+    // ─── Audio System ───
+    const SFX_PATH = 'site/sounds/';
+    const MUSIC_PATH = 'site/sounds/music/under_brigde_ambient_final.mp3';
+    const sfxFiles = {
+      hoverStartIn:     'hover_start_page_in.wav',
+      hoverStartOut:    'hover_start_page_out.wav',
+      hoverAbout:       'hover_about_me.wav',
+      hoverContact:     'hover_contat.wav',
+      hoverProject:     'hover_project.wav',
+      unhoverPages:     'unhover_on_pages.wav',
+      clickEnter:       'click_quit_from_start_page.wav',
+      clickCategory:    'click_when_u_choose_category.wav',
+      clickQuitCategory:'click_when_u_quit_from_categoty.wav',
+      clickReturnStart: 'click_return_to_start_page.wav',
+      clickProjectIn:   'click_in_on_choosen_project.wav',
+      clickProjectOut:  'click_out_on_choosen_project.wav',
+      clickCopy:        'click_on_copy_email.wav',
+    };
+
+    const sfxBuffers = {};
+    const sfxLastPlay = {};
+    const sfxVolumes = {
+      hoverStartIn:     0.55,
+      hoverStartOut:    0.55,
+      hoverAbout:       0.45,
+      hoverContact:     0.45,
+      hoverProject:     0.45,
+      unhoverPages:     0.5,
+      clickEnter:       0.7,
+      clickCategory:    0.7,
+      clickQuitCategory:0.7,
+      clickReturnStart: 0.7,
+      clickProjectIn:   0.7,
+      clickProjectOut:  0.7,
+      clickCopy:        0.8,
+    };
+    let sfxMuted   = localStorage.getItem('sfxMuted')   === '1';
+    let musicMuted = localStorage.getItem('musicMuted') === '1';
+    let musicEl = null, musicSource = null, musicFilter = null, musicGain = null;
+    let musicStarted = false;
+    const MUSIC_VOL = 0.55;
+
+    let suppressUnhover = false;
+    let suppressUnhoverTimer = null;
+    function muteUnhoverBriefly(ms = 600) {
+      suppressUnhover = true;
+      clearTimeout(suppressUnhoverTimer);
+      suppressUnhoverTimer = setTimeout(() => { suppressUnhover = false; }, ms);
+    }
+
+    // Debounce hover-out: if a new hover-in fires within ~55ms, cancel the leave sound.
+    // This kills the double-trigger when the cursor jumps between adjacent hoverables.
+    let pendingLeaveTimer = null;
+    let pendingLeaveSfx = null;
+    function scheduleLeaveSfx(sfx) {
+      if (pendingLeaveTimer) clearTimeout(pendingLeaveTimer);
+      pendingLeaveSfx = sfx;
+      pendingLeaveTimer = setTimeout(() => {
+        if (!suppressUnhover) playSfx(pendingLeaveSfx);
+        pendingLeaveTimer = null;
+        pendingLeaveSfx = null;
+      }, 55);
+    }
+    function cancelPendingLeave() {
+      if (pendingLeaveTimer) {
+        clearTimeout(pendingLeaveTimer);
+        pendingLeaveTimer = null;
+        pendingLeaveSfx = null;
+      }
+    }
+
+    async function loadSfx() {
+      if (!audioCtx) return;
+      await Promise.all(Object.entries(sfxFiles).map(async ([key, file]) => {
+        try {
+          const res = await fetch(SFX_PATH + encodeURIComponent(file));
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const buf = await res.arrayBuffer();
+          sfxBuffers[key] = await audioCtx.decodeAudioData(buf);
+        } catch (e) { console.warn('[sfx load failed]', file, e); }
+      }));
+    }
+
+    function playSfx(name) {
+      if (sfxMuted || !audioCtx || !sfxBuffers[name]) return;
+      const now = audioCtx.currentTime;
+      if (sfxLastPlay[name] && now - sfxLastPlay[name] < 0.04) return;
+      sfxLastPlay[name] = now;
+      const src = audioCtx.createBufferSource();
+      src.buffer = sfxBuffers[name];
+      const g = audioCtx.createGain();
+      g.gain.value = sfxVolumes[name] ?? 0.6;
+      src.connect(g).connect(audioCtx.destination);
+      src.start();
+    }
+
+    function initMusic() {
+      if (musicStarted || !audioCtx) return;
+      musicStarted = true;
+      musicEl = new Audio(encodeURI(MUSIC_PATH));
+      musicEl.loop = true;
+      musicEl.preload = 'auto';
+      try {
+        musicSource = audioCtx.createMediaElementSource(musicEl);
+        musicFilter = audioCtx.createBiquadFilter();
+        musicFilter.type = 'lowpass';
+        musicFilter.frequency.value = 20000;
+        musicFilter.Q.value = 0.7;
+        musicGain = audioCtx.createGain();
+        musicGain.gain.value = musicMuted ? 0 : MUSIC_VOL;
+        musicSource.connect(musicFilter);
+        musicFilter.connect(musicGain);
+        musicGain.connect(audioCtx.destination);
+      } catch (e) { console.warn('[music graph failed]', e); }
+      musicEl.play().catch(e => console.warn('[music play]', e));
+    }
+
+    // depth: 0 surface, 1 categories (20k), 2 inside category (1k), 3 modal (400)
+    function setMusicDepth(level, dur = 0.8) {
+      if (!musicFilter || !audioCtx) return;
+      const map = { 0: 20000, 1: 20000, 2: 1000, 3: 400 };
+      const freq = map[level] ?? 20000;
+      const now = audioCtx.currentTime;
+      musicFilter.frequency.cancelScheduledValues(now);
+      musicFilter.frequency.setValueAtTime(musicFilter.frequency.value, now);
+      musicFilter.frequency.linearRampToValueAtTime(freq, now + dur);
+    }
+
+    function toggleSfx() {
+      sfxMuted = !sfxMuted;
+      localStorage.setItem('sfxMuted', sfxMuted ? '1' : '0');
+      updateAudioBtnStates();
+      if (!sfxMuted) playSfx('hoverStartIn');
+    }
+
+    function toggleMusic() {
+      musicMuted = !musicMuted;
+      localStorage.setItem('musicMuted', musicMuted ? '1' : '0');
+      updateAudioBtnStates();
+      if (musicGain && audioCtx) {
+        const now = audioCtx.currentTime;
+        musicGain.gain.cancelScheduledValues(now);
+        musicGain.gain.setValueAtTime(musicGain.gain.value, now);
+        musicGain.gain.linearRampToValueAtTime(musicMuted ? 0 : MUSIC_VOL, now + 0.35);
+      }
+    }
+
+    function updateAudioBtnStates() {
+      const s = document.getElementById('sfxToggle');
+      const m = document.getElementById('musicToggle');
+      if (s) s.classList.toggle('muted', sfxMuted);
+      if (m) m.classList.toggle('muted', musicMuted);
     }
 
     // ─── Mosaic ───
@@ -638,7 +883,21 @@
       const px = 14;
       const w = Math.ceil(canvas.width / px);
       const h = Math.ceil(canvas.height / px);
-      ctx.drawImage(bgVideo, 0, 0, w, h);
+      const vw = bgVideo.videoWidth;
+      const vh = bgVideo.videoHeight;
+      if (!vw || !vh) { mosaicRAF = requestAnimationFrame(drawMosaic); return; }
+      // object-fit: cover — crop video to match canvas aspect
+      const videoAspect = vw / vh;
+      const canvasAspect = canvas.width / canvas.height;
+      let sx, sy, sw, sh;
+      if (videoAspect > canvasAspect) {
+        sh = vh; sw = vh * canvasAspect;
+        sx = (vw - sw) / 2; sy = 0;
+      } else {
+        sw = vw; sh = vw / canvasAspect;
+        sx = 0; sy = (vh - sh) / 2;
+      }
+      ctx.drawImage(bgVideo, sx, sy, sw, sh, 0, 0, w, h);
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(canvas, 0, 0, w, h, 0, 0, canvas.width, canvas.height);
       mosaicRAF = requestAnimationFrame(drawMosaic);
@@ -679,56 +938,81 @@
       if (document.body.classList.contains('nav-active') && !document.body.classList.contains('panel-open') && diff < -60) exitNav();
     });
 
-    function enterSite() { document.body.classList.add('nav-active'); startMosaic(); }
+    function enterSite(opts) {
+      if (document.body.classList.contains('nav-active')) return;
+      const silent = opts && opts.silent;
+      if (!silent) playSfx('clickEnter');
+      initMusic();
+      document.body.classList.add('nav-active');
+      startMosaic();
+      setMusicDepth(1, 1.2);
+    }
 
     function exitNav() {
-      // Smooth: fade mosaic out via CSS transition, then stop drawing
+      if (!document.body.classList.contains('nav-active')) return;
+      playSfx('clickReturnStart');
+      muteUnhoverBriefly(700);
       document.body.classList.remove('nav-active');
-      // Keep drawing mosaic during fade-out, stop after transition
       setTimeout(() => {
         if (!document.body.classList.contains('nav-active')) stopMosaic();
       }, 1500);
+      setMusicDepth(0, 1.2);
       scrollAccum = 0;
     }
 
     function startPageClick(e) {
-      // If clicked on h1 or subtitle, their own onclick handles it
       if (e.target.closest('h1') || e.target.closest('.subtitle')) return;
       enterSite();
     }
 
     function navBgClick(e) {
-      // Only if clicked on the overlay itself, not on nav items
       if (e.target === e.currentTarget) exitNav();
     }
 
-    function goToAbout() { enterSite(); setTimeout(() => openPanel('about'), 600); }
-    function goToProjects() { enterSite(); setTimeout(() => openPanel('projects'), 600); }
+    function goToAbout()    { goDirectly('about'); }
+    function goToProjects() { goDirectly('projects'); }
 
-    function openPanel(name) {
+    function goDirectly(name) {
+      playSfx('clickCategory');
+      muteUnhoverBriefly(800);
+      initMusic();
+      if (!document.body.classList.contains('nav-active')) {
+        document.body.classList.add('nav-active');
+        startMosaic();
+      }
+      openPanel(name, true);
+      setMusicDepth(2, 1.2);
+    }
+
+    function openPanel(name, silent) {
+      if (!silent) playSfx('clickCategory');
+      muteUnhoverBriefly(700);
       document.querySelector('.nav-overlay').style.opacity = '0';
       document.querySelector('.nav-overlay').style.pointerEvents = 'none';
       const panel = document.getElementById('panel-' + name);
       panel.classList.add('active');
       document.body.classList.add('panel-open');
       currentPanel = name;
+      setMusicDepth(2, 0.6);
       setTimeout(() => {
         panel.querySelectorAll('.fade-up').forEach((el, i) => {
-          setTimeout(() => el.classList.add('visible'), i * 100);
+          setTimeout(() => el.classList.add('visible'), i * 50);
         });
-      }, 100);
+      }, 30);
     }
 
     function goBack() {
+      playSfx('clickQuitCategory');
+      muteUnhoverBriefly(700);
       if (currentPanel) {
         const panel = document.getElementById('panel-' + currentPanel);
         panel.classList.remove('active');
         panel.querySelectorAll('.fade-up').forEach(el => el.classList.remove('visible'));
-        // Reset scroll position
         panel.scrollTop = 0;
       }
       document.body.classList.remove('panel-open');
       currentPanel = null;
+      setMusicDepth(1, 0.8);
       setTimeout(() => {
         document.querySelector('.nav-overlay').style.opacity = '';
         document.querySelector('.nav-overlay').style.pointerEvents = '';
@@ -744,6 +1028,8 @@
 
     // ─── Project Modal ───
     function openModal(title, tag, desc, type, src, gallery) {
+      playSfx('clickProjectIn');
+      setMusicDepth(3, 0.5);
       const container = document.getElementById('modalMediaContainer');
       const spotify = document.getElementById('modalSpotify');
       const galleryEl = document.getElementById('modalGallery');
@@ -775,8 +1061,11 @@
     }
 
     function closeModal() {
+      if (!document.getElementById('projectModal').classList.contains('open')) return;
+      playSfx('clickProjectOut');
       document.getElementById('modalBackdrop').classList.remove('open');
       document.getElementById('projectModal').classList.remove('open');
+      setMusicDepth(2, 0.5);
       setTimeout(() => {
         document.getElementById('modalMediaContainer').innerHTML = '';
         document.getElementById('modalSpotify').innerHTML = '';
@@ -786,6 +1075,7 @@
     function copyEmail(e) {
       e.preventDefault();
       e.stopPropagation();
+      playSfx('clickCopy');
       navigator.clipboard.writeText('twomfourmusic@gmail.com').then(() => {
         const btn = document.getElementById('copyBtn');
         btn.textContent = 'copied';
@@ -801,6 +1091,50 @@
         else if (document.body.classList.contains('nav-active')) exitNav();
       }
     });
+
+    // ─── Hover Sounds ───
+    (function attachHoverSfx() {
+      const onEnter = (sfx) => () => {
+        cancelPendingLeave();
+        if (!suppressUnhover) playSfx(sfx);
+      };
+      const onLeave = (sfx) => () => scheduleLeaveSfx(sfx);
+
+      // start page h1 + subtitle
+      const h1 = document.querySelector('.start-page h1');
+      const subtitle = document.querySelector('.start-page .subtitle');
+      [h1, subtitle].forEach(el => {
+        if (!el) return;
+        el.addEventListener('mouseenter', onEnter('hoverStartIn'));
+        el.addEventListener('mouseleave', onLeave('hoverStartOut'));
+      });
+
+      // nav items (3 categories)
+      document.querySelectorAll('.nav-item').forEach(item => {
+        const txt = item.textContent.trim().toLowerCase();
+        const sfx = txt.includes('about')   ? 'hoverAbout'
+                  : txt.includes('contact') ? 'hoverContact'
+                  : 'hoverProject';
+        item.addEventListener('mouseenter', onEnter(sfx));
+        item.addEventListener('mouseleave', onLeave('unhoverPages'));
+      });
+
+      // inside categories — reuse start-page hover set
+      document.querySelectorAll('.project-tile').forEach(tile => {
+        tile.addEventListener('mouseenter', onEnter('hoverStartIn'));
+        tile.addEventListener('mouseleave', onLeave('hoverStartOut'));
+      });
+      document.querySelectorAll('.contact-link').forEach(a => {
+        a.addEventListener('mouseenter', onEnter('hoverStartIn'));
+        a.addEventListener('mouseleave', onLeave('hoverStartOut'));
+      });
+
+      // arrows
+      document.querySelectorAll('.scroll-arrow, .arrow-up').forEach(a => {
+        a.addEventListener('mouseenter', onEnter('hoverStartIn'));
+        a.addEventListener('mouseleave', onLeave('hoverStartOut'));
+      });
+    })();
   </script>
 
 </body>
