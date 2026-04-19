@@ -580,17 +580,17 @@
   <div class="audio-toggles" id="audioToggles">
     <input type="range" class="audio-slider" id="sfxSlider" min="0" max="100" value="50" oninput="setSfxVolume(this.value / 100)" title="ui volume">
     <button class="audio-btn" id="sfxToggle" onclick="toggleSfx()" title="ui sounds">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 9 H8 L13 5 V19 L8 15 H4 Z" fill="currentColor" stroke="currentColor"/>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 9 H8 L13 5 V19 L8 15 H4 Z"/>
         <path d="M16.5 9.2 A4 4 0 0 1 16.5 14.8"/>
         <path d="M19 6.5 A7.5 7.5 0 0 1 19 17.5"/>
       </svg>
     </button>
     <button class="audio-btn" id="musicToggle" onclick="toggleMusic()" title="music">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 17 V5 L20 3 V15" fill="none"/>
-        <circle cx="6" cy="17" r="3" fill="none"/>
-        <circle cx="17" cy="15" r="3" fill="none"/>
+        <path d="M9 17 V5 L20 3 V15"/>
+        <circle cx="6" cy="17" r="3"/>
+        <circle cx="17" cy="15" r="3"/>
       </svg>
     </button>
   </div>
@@ -776,10 +776,10 @@
       clickProjectOut:  0.5,
       clickCopy:        0.7,
     };
-    let sfxMuted     = localStorage.getItem('sfxMuted')   === '1';
-    let musicMuted   = localStorage.getItem('musicMuted') === '1';
-    let masterSfxVol = parseFloat(localStorage.getItem('masterSfxVol'));
-    if (!isFinite(masterSfxVol)) masterSfxVol = 0.5;
+    let sfxMuted   = localStorage.getItem('sfxMuted')   === '1';
+    let musicMuted = localStorage.getItem('musicMuted') === '1';
+    let masterVol  = parseFloat(localStorage.getItem('masterSfxVol'));
+    if (!isFinite(masterVol)) masterVol = 0.5;
     let musicEl = null, musicSource = null, musicFilter = null, musicGain = null;
     let musicStarted = false;
     const MUSIC_VOL = 0.55;
@@ -838,14 +838,23 @@
       const src = audioCtx.createBufferSource();
       src.buffer = sfxBuffers[name];
       const g = audioCtx.createGain();
-      g.gain.value = (sfxVolumes[name] ?? 0.6) * masterSfxVol;
+      g.gain.value = (sfxVolumes[name] ?? 0.6) * masterVol;
       src.connect(g).connect(audioCtx.destination);
       src.start();
     }
 
     function setSfxVolume(v) {
-      masterSfxVol = Math.max(0, Math.min(1, v));
-      localStorage.setItem('masterSfxVol', String(masterSfxVol));
+      masterVol = Math.max(0, Math.min(1, v));
+      localStorage.setItem('masterSfxVol', String(masterVol));
+      // Propagate to music gain so slider controls both
+      if (musicGain && audioCtx && !musicMuted) {
+        const now = audioCtx.currentTime;
+        const target = MUSIC_VOL * (depthGain[currentDepth] ?? 1) * masterVol;
+        musicGain.gain.cancelScheduledValues(now);
+        musicGain.gain.setValueAtTime(musicGain.gain.value, now);
+        musicGain.gain.linearRampToValueAtTime(target, now + 0.12);
+      }
+      updateAudioBtnStates();
     }
 
     function initMusic() {
@@ -861,7 +870,7 @@
         musicFilter.frequency.value = 20000;
         musicFilter.Q.value = 0.7;
         musicGain = audioCtx.createGain();
-        musicGain.gain.value = musicMuted ? 0 : MUSIC_VOL;
+        musicGain.gain.value = musicMuted ? 0 : MUSIC_VOL * masterVol;
         musicSource.connect(musicFilter);
         musicFilter.connect(musicGain);
         musicGain.connect(audioCtx.destination);
@@ -883,7 +892,7 @@
       musicFilter.frequency.setValueAtTime(musicFilter.frequency.value, now);
       musicFilter.frequency.linearRampToValueAtTime(freq, now + dur);
       if (!musicMuted && musicGain) {
-        const target = MUSIC_VOL * (depthGain[level] ?? 1);
+        const target = MUSIC_VOL * (depthGain[level] ?? 1) * masterVol;
         musicGain.gain.cancelScheduledValues(now);
         musicGain.gain.setValueAtTime(musicGain.gain.value, now);
         musicGain.gain.linearRampToValueAtTime(target, now + dur);
@@ -903,7 +912,7 @@
       updateAudioBtnStates();
       if (musicGain && audioCtx) {
         const now = audioCtx.currentTime;
-        const target = musicMuted ? 0 : MUSIC_VOL * (depthGain[currentDepth] ?? 1);
+        const target = musicMuted ? 0 : MUSIC_VOL * (depthGain[currentDepth] ?? 1) * masterVol;
         musicGain.gain.cancelScheduledValues(now);
         musicGain.gain.setValueAtTime(musicGain.gain.value, now);
         musicGain.gain.linearRampToValueAtTime(target, now + 0.35);
@@ -914,9 +923,10 @@
       const s = document.getElementById('sfxToggle');
       const m = document.getElementById('musicToggle');
       const slider = document.getElementById('sfxSlider');
-      if (s) s.classList.toggle('muted', sfxMuted);
-      if (m) m.classList.toggle('muted', musicMuted);
-      if (slider) slider.value = Math.round(masterSfxVol * 100);
+      const volZero = masterVol <= 0.005;
+      if (s) s.classList.toggle('muted', sfxMuted   || volZero);
+      if (m) m.classList.toggle('muted', musicMuted || volZero);
+      if (slider && document.activeElement !== slider) slider.value = Math.round(masterVol * 100);
     }
 
     // ─── Mosaic ───
