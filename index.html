@@ -67,6 +67,10 @@
       background: rgba(0, 0, 0, 0.5);
     }
 
+    body.panel-open .video-bg::after {
+      background: rgba(0, 0, 0, 0.72);
+    }
+
     /* ─── Start Page ─── */
     .start-page {
       position: relative;
@@ -213,10 +217,14 @@
       font-size: 0.75rem; letter-spacing: 0.1em;
       cursor: pointer;
       opacity: 0; pointer-events: none;
-      transition: opacity 0.4s, color 0.3s;
+      transition: opacity 0.3s, transform 0.3s, color 0.3s;
     }
     .back-btn:hover { color: #fff; }
     body.panel-open .back-btn { opacity: 1; pointer-events: auto; }
+    body.panel-open.scrolled-panel .back-btn {
+      opacity: 0; pointer-events: none;
+      transform: translateY(-6px);
+    }
 
     /* ─── Panels ─── */
     .panel {
@@ -224,10 +232,11 @@
       overflow-y: auto;
       padding: clamp(4rem, 8vh, 6rem) clamp(2rem, 8vw, 8rem);
       opacity: 0; pointer-events: none;
-      transform: translateY(30px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-      /* darker backdrop for readability */
-      background: rgba(0, 0, 0, 0.45);
+      transform: translateY(12px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      /* no bg — darkness handled by body.panel-open .video-bg::after.
+         Only blur stays, so content behind is softened without stacking. */
+      background: transparent;
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
     }
@@ -762,18 +771,18 @@
     const sfxBuffers = {};
     const sfxLastPlay = {};
     const sfxVolumes = {
-      hoverStartIn:     0.5,
-      hoverStartOut:    0.5,
-      hoverAbout:       0.45,
-      hoverContact:     0.45,
-      hoverProject:     0.45,
-      unhoverPages:     0.5,
+      hoverStartIn:     0.35,
+      hoverStartOut:    0.35,
+      hoverAbout:       0.32,
+      hoverContact:     0.32,
+      hoverProject:     0.32,
+      unhoverPages:     0.35,
       clickEnter:       0.7,
       clickCategory:    0.7,
       clickQuitCategory:0.65,
       clickReturnStart: 0.65,
-      clickProjectIn:   0.5,
-      clickProjectOut:  0.5,
+      clickProjectIn:   0.35,
+      clickProjectOut:  0.35,
       clickCopy:        0.7,
     };
     let sfxMuted   = localStorage.getItem('sfxMuted')   === '1';
@@ -994,12 +1003,38 @@
       }
     });
 
-    let touchStartY = 0;
-    window.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
+    let touchStartY = 0, touchStartX = 0, touchStartTime = 0;
+    window.addEventListener('touchstart', (e) => {
+      touchStartY = e.touches[0].clientY;
+      touchStartX = e.touches[0].clientX;
+      touchStartTime = Date.now();
+    });
     window.addEventListener('touchend', (e) => {
-      const diff = touchStartY - e.changedTouches[0].clientY;
-      if (!document.body.classList.contains('nav-active') && diff > 60) enterSite();
-      if (document.body.classList.contains('nav-active') && !document.body.classList.contains('panel-open') && diff < -60) exitNav();
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const dx = endX - touchStartX;
+      const dy = touchStartY - endY;
+      const dt = Date.now() - touchStartTime;
+
+      // Edge swipe right = back. Must start near left edge (<40px),
+      // be mostly horizontal, and happen within 500ms (not a slow scroll).
+      if (touchStartX < 40 && dx > 80 && Math.abs(endY - touchStartY) < 70 && dt < 500) {
+        if (document.getElementById('projectModal').classList.contains('open')) closeModal();
+        else if (currentPanel) goBack();
+        else if (document.body.classList.contains('nav-active')) exitNav();
+        return;
+      }
+
+      // Vertical swipe logic (existing)
+      if (!document.body.classList.contains('nav-active') && dy > 60) enterSite();
+      if (document.body.classList.contains('nav-active') && !document.body.classList.contains('panel-open') && dy < -60) exitNav();
+    });
+
+    // Hide back-btn when scrolling down inside a panel
+    document.querySelectorAll('.panel').forEach(panel => {
+      panel.addEventListener('scroll', () => {
+        document.body.classList.toggle('scrolled-panel', panel.scrollTop > 50);
+      }, { passive: true });
     });
 
     function enterSite(opts) {
@@ -1075,6 +1110,7 @@
         panel.scrollTop = 0;
       }
       document.body.classList.remove('panel-open');
+      document.body.classList.remove('scrolled-panel');
       currentPanel = null;
       setMusicDepth(1, 0.8);
       setTimeout(() => {
