@@ -498,10 +498,38 @@
       right: 2rem;
       z-index: 60;
       display: flex;
+      align-items: center;
       gap: 0.6rem;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.6s ease 0.2s;
+    }
+    .audio-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 70px;
+      height: 2px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+      margin-right: 0.2rem;
+    }
+    .audio-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.7);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .audio-slider::-webkit-slider-thumb:hover { background: #fff; transform: scale(1.15); }
+    .audio-slider::-moz-range-thumb {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.7);
+      border: none;
+      cursor: pointer;
     }
     body.site-entered .audio-toggles {
       opacity: 1;
@@ -550,6 +578,7 @@
 
   <!-- Audio Toggles -->
   <div class="audio-toggles" id="audioToggles">
+    <input type="range" class="audio-slider" id="sfxSlider" min="0" max="100" value="50" oninput="setSfxVolume(this.value / 100)" title="ui volume">
     <button class="audio-btn" id="sfxToggle" onclick="toggleSfx()" title="ui sounds">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 9 H8 L13 5 V19 L8 15 H4 Z" fill="currentColor" stroke="currentColor"/>
@@ -733,25 +762,32 @@
     const sfxBuffers = {};
     const sfxLastPlay = {};
     const sfxVolumes = {
-      hoverStartIn:     0.55,
-      hoverStartOut:    0.55,
+      hoverStartIn:     0.5,
+      hoverStartOut:    0.5,
       hoverAbout:       0.45,
       hoverContact:     0.45,
       hoverProject:     0.45,
       unhoverPages:     0.5,
       clickEnter:       0.7,
       clickCategory:    0.7,
-      clickQuitCategory:0.7,
-      clickReturnStart: 0.7,
-      clickProjectIn:   0.7,
-      clickProjectOut:  0.7,
-      clickCopy:        0.8,
+      clickQuitCategory:0.65,
+      clickReturnStart: 0.65,
+      clickProjectIn:   0.5,
+      clickProjectOut:  0.5,
+      clickCopy:        0.7,
     };
-    let sfxMuted   = localStorage.getItem('sfxMuted')   === '1';
-    let musicMuted = localStorage.getItem('musicMuted') === '1';
+    let sfxMuted     = localStorage.getItem('sfxMuted')   === '1';
+    let musicMuted   = localStorage.getItem('musicMuted') === '1';
+    let masterSfxVol = parseFloat(localStorage.getItem('masterSfxVol'));
+    if (!isFinite(masterSfxVol)) masterSfxVol = 0.5;
     let musicEl = null, musicSource = null, musicFilter = null, musicGain = null;
     let musicStarted = false;
     const MUSIC_VOL = 0.55;
+
+    // one-shot flag: swallows the very next mouseenter-sfx
+    // used when closing modal (cursor is still over the tile)
+    let swallowNextEnter = false;
+    let swallowEnterTimer = null;
 
     let suppressUnhover = false;
     let suppressUnhoverTimer = null;
@@ -802,9 +838,14 @@
       const src = audioCtx.createBufferSource();
       src.buffer = sfxBuffers[name];
       const g = audioCtx.createGain();
-      g.gain.value = sfxVolumes[name] ?? 0.6;
+      g.gain.value = (sfxVolumes[name] ?? 0.6) * masterSfxVol;
       src.connect(g).connect(audioCtx.destination);
       src.start();
+    }
+
+    function setSfxVolume(v) {
+      masterSfxVol = Math.max(0, Math.min(1, v));
+      localStorage.setItem('masterSfxVol', String(masterSfxVol));
     }
 
     function initMusic() {
@@ -828,15 +869,25 @@
       musicEl.play().catch(e => console.warn('[music play]', e));
     }
 
-    // depth: 0 surface, 1 categories (20k), 2 inside category (1k), 3 modal (400)
+    // depth: 0 start page, 1 categories, 2 inside category, 3 modal (crushed)
+    const depthFreq = { 0: 20000, 1: 8000, 2: 1000, 3: 400 };
+    const depthGain = { 0: 1.0,   1: 1.0,  2: 1.0,  3: 0.3 }; // modal ducks to ~-10 dB
+    let currentDepth = 0;
+
     function setMusicDepth(level, dur = 0.8) {
       if (!musicFilter || !audioCtx) return;
-      const map = { 0: 20000, 1: 20000, 2: 1000, 3: 400 };
-      const freq = map[level] ?? 20000;
+      currentDepth = level;
       const now = audioCtx.currentTime;
+      const freq = depthFreq[level] ?? 20000;
       musicFilter.frequency.cancelScheduledValues(now);
       musicFilter.frequency.setValueAtTime(musicFilter.frequency.value, now);
       musicFilter.frequency.linearRampToValueAtTime(freq, now + dur);
+      if (!musicMuted && musicGain) {
+        const target = MUSIC_VOL * (depthGain[level] ?? 1);
+        musicGain.gain.cancelScheduledValues(now);
+        musicGain.gain.setValueAtTime(musicGain.gain.value, now);
+        musicGain.gain.linearRampToValueAtTime(target, now + dur);
+      }
     }
 
     function toggleSfx() {
@@ -852,17 +903,20 @@
       updateAudioBtnStates();
       if (musicGain && audioCtx) {
         const now = audioCtx.currentTime;
+        const target = musicMuted ? 0 : MUSIC_VOL * (depthGain[currentDepth] ?? 1);
         musicGain.gain.cancelScheduledValues(now);
         musicGain.gain.setValueAtTime(musicGain.gain.value, now);
-        musicGain.gain.linearRampToValueAtTime(musicMuted ? 0 : MUSIC_VOL, now + 0.35);
+        musicGain.gain.linearRampToValueAtTime(target, now + 0.35);
       }
     }
 
     function updateAudioBtnStates() {
       const s = document.getElementById('sfxToggle');
       const m = document.getElementById('musicToggle');
+      const slider = document.getElementById('sfxSlider');
       if (s) s.classList.toggle('muted', sfxMuted);
       if (m) m.classList.toggle('muted', musicMuted);
+      if (slider) slider.value = Math.round(masterSfxVol * 100);
     }
 
     // ─── Mosaic ───
@@ -1029,6 +1083,7 @@
     // ─── Project Modal ───
     function openModal(title, tag, desc, type, src, gallery) {
       playSfx('clickProjectIn');
+      muteUnhoverBriefly(700);
       setMusicDepth(3, 0.5);
       const container = document.getElementById('modalMediaContainer');
       const spotify = document.getElementById('modalSpotify');
@@ -1063,6 +1118,11 @@
     function closeModal() {
       if (!document.getElementById('projectModal').classList.contains('open')) return;
       playSfx('clickProjectOut');
+      // Cursor is still over the tile that was clicked — swallow its re-enter,
+      // but let enter on *other* tiles fire normally.
+      swallowNextEnter = true;
+      clearTimeout(swallowEnterTimer);
+      swallowEnterTimer = setTimeout(() => { swallowNextEnter = false; }, 800);
       document.getElementById('modalBackdrop').classList.remove('open');
       document.getElementById('projectModal').classList.remove('open');
       setMusicDepth(2, 0.5);
@@ -1096,6 +1156,11 @@
     (function attachHoverSfx() {
       const onEnter = (sfx) => () => {
         cancelPendingLeave();
+        if (swallowNextEnter) {
+          swallowNextEnter = false;
+          clearTimeout(swallowEnterTimer);
+          return;
+        }
         if (!suppressUnhover) playSfx(sfx);
       };
       const onLeave = (sfx) => () => scheduleLeaveSfx(sfx);
