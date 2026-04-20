@@ -96,16 +96,31 @@
       line-height: 1;
       letter-spacing: -0.03em;
       color: #fff;
-      cursor: pointer;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      /* h1 rectangle is ignored; only text-lines capture the pointer */
+      pointer-events: none;
       transition: color 0.3s;
     }
 
-    .start-page h1 span {
-      display: block;
+    .start-page h1 .tl-line {
+      display: inline-block;
+      width: max-content;
+      /* tight line-height so the hit box hugs the glyphs,
+         not the full em-box (which has empty space above caps) */
+      line-height: 0.82;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: color 0.3s;
+    }
+
+    .start-page h1 .tl-line:nth-child(2) {
       padding-left: 0.15em;
     }
 
-    .start-page h1:hover {
+    .start-page h1.hovered .tl-line,
+    .start-page h1 .tl-line:hover {
       color: rgba(255,255,255,0.7);
     }
 
@@ -130,28 +145,28 @@
       transform: translateX(-50%);
       z-index: 5;
       cursor: pointer;
-      opacity: 0.4;
+      opacity: 0.7;
       transition: opacity 0.6s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.55rem;
+      gap: 0.7rem;
     }
     .scroll-arrow:hover { opacity: 1; }
     body.nav-active .scroll-arrow.arrow-down { opacity: 0; pointer-events: none; }
 
     .scroll-arrow svg, .arrow-up svg {
-      width: 28px; height: 28px;
-      stroke: #fff; fill: none; stroke-width: 1.5;
+      width: 38px; height: 38px;
+      stroke: #fff; fill: none; stroke-width: 2;
     }
 
     .scroll-arrow svg { animation: arrow-bounce 2.5s ease-in-out infinite; }
 
     .scroll-hint {
-      font-size: 0.65rem;
+      font-size: 0.8rem;
       font-weight: 400;
-      color: rgba(255,255,255,0.75);
-      letter-spacing: 0.25em;
+      color: rgba(255,255,255,0.95);
+      letter-spacing: 0.28em;
       text-transform: lowercase;
       white-space: nowrap;
       pointer-events: none;
@@ -169,8 +184,8 @@
       transition: opacity 0.6s ease;
       animation: arrow-bounce-up 2.5s ease-in-out infinite;
     }
-    .arrow-up svg { width: 24px; height: 24px; }
-    body.nav-active .arrow-up { opacity: 0.4; pointer-events: auto; }
+    .arrow-up svg { width: 34px; height: 34px; stroke-width: 2; }
+    body.nav-active .arrow-up { opacity: 0.7; pointer-events: auto; }
     body.nav-active .arrow-up:hover { opacity: 1; }
     body.panel-open .arrow-up { opacity: 0; pointer-events: none; }
 
@@ -370,6 +385,11 @@
     }
     .modal-close:hover { color: #fff; }
 
+    .modal-media-wrap {
+      position: relative;
+      line-height: 0;
+    }
+
     .modal-media {
       width: 100%;
       aspect-ratio: 16/9;
@@ -377,6 +397,88 @@
       display: block;
       border-radius: 12px 12px 0 0;
     }
+
+    img.modal-media { cursor: zoom-in; }
+
+    .modal-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 3;
+      transition: background 0.25s, border-color 0.25s, opacity 0.25s;
+      opacity: 0.75;
+    }
+    .modal-nav:hover { background: rgba(0,0,0,0.75); border-color: rgba(255,255,255,0.4); opacity: 1; }
+    .modal-nav.prev { left: 0.7rem; }
+    .modal-nav.next { right: 0.7rem; }
+
+    .modal-zoom {
+      position: absolute;
+      bottom: 0.7rem; right: 0.7rem;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 3;
+      transition: background 0.25s, border-color 0.25s, opacity 0.25s;
+      opacity: 0.8;
+    }
+    .modal-zoom:hover { background: rgba(0,0,0,0.8); border-color: rgba(255,255,255,0.4); opacity: 1; }
+    .modal-zoom svg { width: 16px; height: 16px; }
+
+    .modal-back-main {
+      position: absolute;
+      top: 0.7rem; left: 0.7rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      z-index: 3;
+      transition: background 0.25s, border-color 0.25s;
+    }
+    .modal-back-main:hover { background: rgba(0,0,0,0.8); border-color: rgba(255,255,255,0.4); }
+
+    .modal-lightbox {
+      position: fixed; inset: 0; z-index: 70;
+      background: rgba(0,0,0,0.94);
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 2rem;
+      cursor: zoom-out;
+    }
+    .modal-lightbox.open { display: flex; }
+    .modal-lightbox img {
+      max-width: 95vw;
+      max-height: 95vh;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+    .modal-lightbox-close {
+      position: absolute;
+      top: 1.2rem; right: 1.5rem;
+      background: none; border: none;
+      color: rgba(255,255,255,0.7);
+      font-size: 2rem; cursor: pointer;
+      transition: color 0.25s;
+      line-height: 1;
+    }
+    .modal-lightbox-close:hover { color: #fff; }
 
     .modal-gallery {
       display: grid;
@@ -397,6 +499,11 @@
     }
 
     .modal-gallery img:hover { opacity: 1; }
+    .modal-gallery img.active-thumb {
+      opacity: 1;
+      outline: 1px solid rgba(255,255,255,0.55);
+      outline-offset: -1px;
+    }
 
     .modal-body { padding: 1.5rem 2rem 2rem; }
 
@@ -565,6 +672,11 @@
       border-color: rgba(255,255,255,0.3);
     }
     .audio-btn svg { width: 16px; height: 16px; fill: currentColor; }
+    /* filled shapes look heavier than the speaker's thin strokes at the same
+       color alpha; nudge music-icon visual weight down + size slightly up
+       so the two buttons read as the same opacity. */
+    #musicToggle svg { width: 20px; height: 20px; opacity: 0.8; transition: opacity 0.3s; }
+    #musicToggle:hover svg { opacity: 1; }
     .audio-btn.muted { color: rgba(255,255,255,0.18); }
     .audio-btn.muted::after {
       content: '';
@@ -596,10 +708,15 @@
       </svg>
     </button>
     <button class="audio-btn" id="musicToggle" onclick="toggleMusic()" title="music">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 17 V5 L20 3 V15"/>
-        <circle cx="6" cy="17" r="3"/>
-        <circle cx="17" cy="15" r="3"/>
+      <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+        <!-- note heads -->
+        <ellipse cx="6" cy="17" rx="3" ry="2.2"/>
+        <ellipse cx="17" cy="15" rx="3" ry="2.2"/>
+        <!-- beam (parallelogram) -->
+        <path d="M9 5 L20 3 L20 5.5 L9 7.5 Z"/>
+        <!-- stems -->
+        <rect x="8.25" y="5" width="1.5" height="12"/>
+        <rect x="19.25" y="3" width="1.5" height="12"/>
       </svg>
     </button>
   </div>
@@ -614,8 +731,11 @@
 
   <!-- Start Page -->
   <div class="start-page" onclick="startPageClick(event)">
-    <h1 onclick="goToAbout()">Tim<span>Liubimov</span></h1>
-    <div class="subtitle" onclick="goToProjects()">music & sound</div>
+    <h1 class="start-h1" onclick="goToAbout()">
+      <span class="tl-line">Tim</span>
+      <span class="tl-line">Liubimov</span>
+    </h1>
+    <div class="subtitle" onclick="goToProjects()">music &amp; sound</div>
   </div>
 
   <div class="scroll-arrow arrow-down" onclick="enterSite()">
@@ -655,7 +775,7 @@
 
   <!-- Projects -->
   <div class="panel" id="panel-projects" onclick="panelBgClick(event)">
-    <h2 class="section-header fade-up" style="text-align:center">projects</h2>
+    <h2 class="section-header fade-up" style="width:max-content;margin-left:auto;margin-right:auto;">projects</h2>
     <div class="projects-grid">
 
       <div class="project-tile fade-up"
@@ -719,10 +839,16 @@
     </div>
   </div>
 
+  <!-- Fullscreen image lightbox (zoomed preview) -->
+  <div class="modal-lightbox" id="modalLightbox" onclick="closeModalLightbox()">
+    <img id="modalLightboxImg" src="" alt="">
+    <button class="modal-lightbox-close" onclick="event.stopPropagation();closeModalLightbox()">&times;</button>
+  </div>
+
   <!-- Project Modal -->
   <div class="project-modal-backdrop" id="modalBackdrop" onclick="closeModal()"></div>
   <div class="project-modal" id="projectModal">
-    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <button class="modal-close" onclick="closeModal('x')">&times;</button>
     <div id="modalMediaContainer"></div>
     <div class="modal-body">
       <div class="modal-title" id="modalTitle"></div>
@@ -755,9 +881,14 @@
     const sfxFiles = {
       hoverStartIn:     'hover_start_page_in.wav',
       hoverStartOut:    'hover_start_page_out.wav',
+      hoverTimIn:       'hover_tim_liubimov_in.wav',
+      // tim-out audio clicked too hard; re-use the music&sound-out take
+      hoverTimOut:      'hover_music_and_sound_out.wav',
+      hoverMSIn:        'hover_music_and_sound_in.wav',
+      hoverMSOut:       'hover_music_and_sound_out.wav',
       hoverAbout:       'hover_about_me.wav',
-      hoverContact:     'hover_contat.wav',
-      hoverProject:     'hover_project.wav',
+      hoverContact:     'hover_contact.wav',
+      hoverProject:     'hover_projects.wav',
       unhoverPages:     'unhover_on_pages.wav',
       clickEnter:       'click_quit_from_start_page.wav',
       clickCategory:    'click_when_u_choose_category.wav',
@@ -773,6 +904,10 @@
     const sfxVolumes = {
       hoverStartIn:     0.35,
       hoverStartOut:    0.35,
+      hoverTimIn:       0.35,
+      hoverTimOut:      0.35,
+      hoverMSIn:        0.35,
+      hoverMSOut:       0.35,
       hoverAbout:       0.32,
       hoverContact:     0.32,
       hoverProject:     0.32,
@@ -783,7 +918,7 @@
       clickReturnStart: 0.65,
       clickProjectIn:   0.35,
       clickProjectOut:  0.35,
-      clickCopy:        0.7,
+      clickCopy:        0.49,
     };
     let sfxMuted   = localStorage.getItem('sfxMuted')   === '1';
     let musicMuted = localStorage.getItem('musicMuted') === '1';
@@ -1127,43 +1262,148 @@
     }
 
     // ─── Project Modal ───
+    // Modal holds a navigable image list + an original media (video/spotify/img).
+    // For img-type:   images = [src, ...gallery], starts on image view.
+    // For video-type: images = [...gallery], starts on video, thumbs switch to image.
+    // For spotify:    images = [], stays on iframe.
+    const modalState = {
+      origType: null,
+      origSrc: null,
+      images: [],
+      currentIdx: 0,
+      viewMode: 'main', // 'main' or 'image'
+    };
+
     function openModal(title, tag, desc, type, src, gallery) {
       playSfx('clickProjectIn');
       muteUnhoverBriefly(700);
       setMusicDepth(3, 0.5);
-      const container = document.getElementById('modalMediaContainer');
-      const spotify = document.getElementById('modalSpotify');
-      const galleryEl = document.getElementById('modalGallery');
-      container.innerHTML = '';
-      spotify.innerHTML = '';
-      galleryEl.innerHTML = '';
 
-      if (type === 'video') {
-        container.innerHTML = '<video class="modal-media" autoplay muted loop playsinline><source src="'+src+'" type="video/mp4"></video>';
-      } else if (type === 'img') {
-        container.innerHTML = '<img class="modal-media" src="'+src+'">';
-      } else if (type === 'spotify') {
-        const isAlbum = src.includes('/album/');
-        spotify.innerHTML = '<iframe src="'+src+'" height="'+(isAlbum ? 352 : 152)+'" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
-      }
-
-      if (gallery && gallery.length) {
-        gallery.forEach(img => {
-          galleryEl.innerHTML += '<img src="'+img+'" onclick="document.querySelector(\'.modal-media\').src=\''+img+'\'">';
-        });
-      }
+      modalState.origType = type;
+      modalState.origSrc = src;
+      modalState.images = (type === 'img')
+        ? [src, ...(gallery || [])]
+        : (gallery ? [...gallery] : []);
+      modalState.currentIdx = 0;
+      modalState.viewMode = (type === 'img') ? 'image' : 'main';
 
       document.getElementById('modalTitle').textContent = title;
       document.getElementById('modalTag').textContent = tag;
       document.getElementById('modalDesc').textContent = desc;
 
+      const spotify = document.getElementById('modalSpotify');
+      spotify.innerHTML = '';
+      if (type === 'spotify') {
+        const isAlbum = src.includes('/album/');
+        spotify.innerHTML = '<iframe src="'+src+'" height="'+(isAlbum ? 352 : 152)+'" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
+      }
+
+      renderModalGallery(gallery || []);
+      renderModalMedia();
+
       document.getElementById('modalBackdrop').classList.add('open');
       document.getElementById('projectModal').classList.add('open');
     }
 
-    function closeModal() {
+    function renderModalMedia() {
+      const container = document.getElementById('modalMediaContainer');
+      const { origType, origSrc, images, currentIdx, viewMode } = modalState;
+
+      if (viewMode === 'main' && origType === 'video') {
+        container.innerHTML = '<div class="modal-media-wrap"><video class="modal-media" autoplay muted loop playsinline><source src="'+origSrc+'" type="video/mp4"></video></div>';
+        updateGalleryActive();
+        return;
+      }
+      if (viewMode === 'image' && images.length) {
+        const imgSrc = images[currentIdx];
+        const showArrows = images.length > 1;
+        const showBackToMain = origType === 'video';
+        let html = '<div class="modal-media-wrap">';
+        html += '<img class="modal-media" src="'+imgSrc+'" alt="" onclick="modalZoom()">';
+        if (showArrows) {
+          html += '<button class="modal-nav prev" onclick="event.stopPropagation();modalPrev()" title="previous">&#10094;</button>';
+          html += '<button class="modal-nav next" onclick="event.stopPropagation();modalNext()" title="next">&#10095;</button>';
+        }
+        html += '<button class="modal-zoom" onclick="event.stopPropagation();modalZoom()" title="zoom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.5" y2="16.5"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="11" y1="8" x2="11" y2="14"/></svg></button>';
+        if (showBackToMain) {
+          html += '<button class="modal-back-main" onclick="event.stopPropagation();modalBackToMain()" title="back to video">&larr; video</button>';
+        }
+        html += '</div>';
+        container.innerHTML = html;
+        updateGalleryActive();
+        return;
+      }
+      container.innerHTML = '';
+    }
+
+    function renderModalGallery(gallery) {
+      const galleryEl = document.getElementById('modalGallery');
+      galleryEl.innerHTML = '';
+      if (!gallery.length) return;
+      gallery.forEach((imgSrc, i) => {
+        // img-type: images[0] is main src, so gallery[i] lives at index i+1
+        // video-type: gallery[i] lives at index i
+        const targetIdx = modalState.origType === 'img' ? i + 1 : i;
+        galleryEl.innerHTML += '<img src="'+imgSrc+'" data-idx="'+targetIdx+'" onclick="event.stopPropagation();modalShowImageAt('+targetIdx+')">';
+      });
+    }
+
+    function updateGalleryActive() {
+      document.querySelectorAll('#modalGallery img').forEach(t => {
+        const idx = parseInt(t.dataset.idx, 10);
+        t.classList.toggle('active-thumb', modalState.viewMode === 'image' && idx === modalState.currentIdx);
+      });
+    }
+
+    function modalShowImageAt(idx) {
+      if (idx < 0 || idx >= modalState.images.length) return;
+      modalState.currentIdx = idx;
+      modalState.viewMode = 'image';
+      renderModalMedia();
+    }
+
+    function modalPrev() {
+      if (!modalState.images.length) return;
+      const n = modalState.images.length;
+      modalState.currentIdx = (modalState.currentIdx - 1 + n) % n;
+      modalState.viewMode = 'image';
+      renderModalMedia();
+    }
+
+    function modalNext() {
+      if (!modalState.images.length) return;
+      const n = modalState.images.length;
+      modalState.currentIdx = (modalState.currentIdx + 1) % n;
+      modalState.viewMode = 'image';
+      renderModalMedia();
+    }
+
+    function modalBackToMain() {
+      modalState.viewMode = 'main';
+      renderModalMedia();
+    }
+
+    function modalZoom() {
+      if (modalState.viewMode !== 'image') return;
+      const src = modalState.images[modalState.currentIdx];
+      if (!src) return;
+      document.getElementById('modalLightboxImg').src = src;
+      document.getElementById('modalLightbox').classList.add('open');
+    }
+
+    function closeModalLightbox(silent) {
+      const lb = document.getElementById('modalLightbox');
+      if (!lb.classList.contains('open')) return;
+      if (!silent) playSfx('clickProjectOut');
+      lb.classList.remove('open');
+    }
+
+    function closeModal(source) {
       if (!document.getElementById('projectModal').classList.contains('open')) return;
-      playSfx('clickProjectOut');
+      // X-button → "project out" sound; anything else (backdrop / escape / swipe)
+      // → the "leave category" sound, to match the back-feel.
+      const sfx = source === 'x' ? 'clickProjectOut' : 'clickQuitCategory';
+      playSfx(sfx);
       // Cursor is still over the tile that was clicked — swallow its re-enter,
       // but let enter on *other* tiles fire normally.
       swallowNextEnter = true;
@@ -1171,6 +1411,7 @@
       swallowEnterTimer = setTimeout(() => { swallowNextEnter = false; }, 800);
       document.getElementById('modalBackdrop').classList.remove('open');
       document.getElementById('projectModal').classList.remove('open');
+      closeModalLightbox(true);
       setMusicDepth(2, 0.5);
       setTimeout(() => {
         document.getElementById('modalMediaContainer').innerHTML = '';
@@ -1191,10 +1432,18 @@
     }
 
     document.addEventListener('keydown', (e) => {
+      const lightboxOpen = document.getElementById('modalLightbox').classList.contains('open');
+      const modalOpen = document.getElementById('projectModal').classList.contains('open');
       if (e.key === 'Escape') {
-        if (document.getElementById('projectModal').classList.contains('open')) closeModal();
+        if (lightboxOpen) closeModalLightbox();
+        else if (modalOpen) closeModal();
         else if (currentPanel) goBack();
         else if (document.body.classList.contains('nav-active')) exitNav();
+        return;
+      }
+      if (modalOpen && modalState.viewMode === 'image') {
+        if (e.key === 'ArrowLeft')  modalPrev();
+        else if (e.key === 'ArrowRight') modalNext();
       }
     });
 
@@ -1211,14 +1460,51 @@
       };
       const onLeave = (sfx) => () => scheduleLeaveSfx(sfx);
 
-      // start page h1 + subtitle
+      // start page h1 — two text-lines ("Tim" / "Liubimov") are separate
+      // hit zones so hover never fires in the empty space beside "Tim".
+      // Group semantics:
+      //  • entering the group plays hoverTimIn once
+      //  • moving between Tim↔Liubimov does NOT re-fire enter (re-entering while
+      //    our own leave is still pending — detected via pendingLeaveSfx key)
+      //  • leaving the group schedules hoverTimOut via the global 55ms debounce,
+      //    so hopping h1 → subtitle cancels the leave (subtitle.enter clears it)
       const h1 = document.querySelector('.start-page h1');
+      if (h1) {
+        const lines = h1.querySelectorAll('.tl-line');
+        let insideCount = 0;
+        lines.forEach(line => {
+          line.addEventListener('mouseenter', () => {
+            // re-entry inside group = a leave we just scheduled is still pending
+            const reEntering = pendingLeaveSfx === 'hoverTimOut' && pendingLeaveTimer !== null;
+            cancelPendingLeave();
+            if (swallowNextEnter) {
+              swallowNextEnter = false;
+              clearTimeout(swallowEnterTimer);
+              insideCount++;
+              h1.classList.add('hovered');
+              return;
+            }
+            const wasOutside = insideCount === 0 && !reEntering;
+            insideCount++;
+            h1.classList.add('hovered');
+            if (wasOutside && !suppressUnhover) playSfx('hoverTimIn');
+          });
+          line.addEventListener('mouseleave', () => {
+            insideCount = Math.max(0, insideCount - 1);
+            if (insideCount === 0) {
+              h1.classList.remove('hovered');
+              scheduleLeaveSfx('hoverTimOut');
+            }
+          });
+        });
+      }
+
+      // subtitle "music & sound" — own sound pair
       const subtitle = document.querySelector('.start-page .subtitle');
-      [h1, subtitle].forEach(el => {
-        if (!el) return;
-        el.addEventListener('mouseenter', onEnter('hoverStartIn'));
-        el.addEventListener('mouseleave', onLeave('hoverStartOut'));
-      });
+      if (subtitle) {
+        subtitle.addEventListener('mouseenter', onEnter('hoverMSIn'));
+        subtitle.addEventListener('mouseleave', onLeave('hoverMSOut'));
+      }
 
       // nav items (3 categories)
       document.querySelectorAll('.nav-item').forEach(item => {
@@ -1230,7 +1516,7 @@
         item.addEventListener('mouseleave', onLeave('unhoverPages'));
       });
 
-      // inside categories — reuse start-page hover set
+      // inside categories — reuse old start-page hover set
       document.querySelectorAll('.project-tile').forEach(tile => {
         tile.addEventListener('mouseenter', onEnter('hoverStartIn'));
         tile.addEventListener('mouseleave', onLeave('hoverStartOut'));
@@ -1240,8 +1526,9 @@
         a.addEventListener('mouseleave', onLeave('hoverStartOut'));
       });
 
-      // arrows
-      document.querySelectorAll('.scroll-arrow, .arrow-up').forEach(a => {
+      // arrow-up on categories — keep hover sound.
+      // scroll-arrow (swipe-or-click) intentionally silent.
+      document.querySelectorAll('.arrow-up').forEach(a => {
         a.addEventListener('mouseenter', onEnter('hoverStartIn'));
         a.addEventListener('mouseleave', onLeave('hoverStartOut'));
       });
