@@ -116,7 +116,9 @@
     }
 
     .start-page h1 .tl-line:nth-child(2) {
-      padding-left: 0.15em;
+      /* margin, not padding — padding would extend the hit-box left of the
+         visible L and leave a dead hover zone; margin shifts the whole box. */
+      margin-left: 0.15em;
     }
 
     .start-page h1.hovered .tl-line,
@@ -128,8 +130,13 @@
       font-size: clamp(0.8rem, 1.5vw, 1rem);
       font-weight: 400;
       color: var(--text-muted);
-      margin-top: 0.8rem;
-      margin-left: calc(clamp(3rem, 10vw, 8rem) * 0.15);
+      /* Extra vertical gap so cursor has room between h1 and subtitle — the
+         fast-aim debounce in scheduleLeaveSfx suppresses stray "out" sounds. */
+      margin-top: 1.4rem;
+      /* Align first 'm' visually under L's stem.
+         0.15em matches Liubimov's padding, but L has ~0.08em left side-bearing
+         while m has ~0, so we add that to the offset. */
+      margin-left: calc(clamp(3rem, 10vw, 8rem) * 0.228);
       letter-spacing: 0.15em;
       cursor: pointer;
       transition: color 0.3s;
@@ -941,8 +948,10 @@
       suppressUnhoverTimer = setTimeout(() => { suppressUnhover = false; }, ms);
     }
 
-    // Debounce hover-out: if a new hover-in fires within ~55ms, cancel the leave sound.
-    // This kills the double-trigger when the cursor jumps between adjacent hoverables.
+    // Debounce hover-out: if a new hover-in fires within this window, cancel the
+    // leave sound. Kills stray "out" on fast cursor hops between neighbouring
+    // hoverables (h1 → subtitle, nav-items, tiles).
+    const LEAVE_DEBOUNCE_MS = 160;
     let pendingLeaveTimer = null;
     let pendingLeaveSfx = null;
     function scheduleLeaveSfx(sfx) {
@@ -952,7 +961,7 @@
         if (!suppressUnhover) playSfx(pendingLeaveSfx);
         pendingLeaveTimer = null;
         pendingLeaveSfx = null;
-      }, 55);
+      }, LEAVE_DEBOUNCE_MS);
     }
     function cancelPendingLeave() {
       if (pendingLeaveTimer) {
@@ -1466,7 +1475,7 @@
       //  • entering the group plays hoverTimIn once
       //  • moving between Tim↔Liubimov does NOT re-fire enter (re-entering while
       //    our own leave is still pending — detected via pendingLeaveSfx key)
-      //  • leaving the group schedules hoverTimOut via the global 55ms debounce,
+      //  • leaving the group schedules hoverTimOut via the global debounce,
       //    so hopping h1 → subtitle cancels the leave (subtitle.enter clears it)
       const h1 = document.querySelector('.start-page h1');
       if (h1) {
