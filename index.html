@@ -406,6 +406,7 @@
     }
 
     img.modal-media { cursor: zoom-in; }
+    iframe.modal-media { border: 0; }
 
     .modal-nav {
       position: absolute;
@@ -786,13 +787,13 @@
     <div class="projects-grid">
 
       <div class="project-tile fade-up"
-           onclick="openModal('dubbing & editing for amopictures','sound design / dubbing','mixing and mastering of dubbing (lip-syncing, frequency, dynamic, and spatial processing, etc.)','video','assets/video/amo-dub.mp4')">
+           onclick="openModal('dubbing & editing for amopictures','sound design / dubbing','handled lip-sync, audio mixing, synchronized sound design, and mastering. participated in the production of approximately 15 short films. this is one of them.','youtube','7wvpFE2rOGk')">
         <img class="project-thumb" src="assets/img/amo-preview.jpg" alt="AMOpictures">
         <div class="project-tile-title">dubbing & editing for amopictures</div>
       </div>
 
       <div class="project-tile fade-up"
-           onclick="openModal('&quot;made in ukraine&quot; show','show / sound design','sound design and recording of live instruments from scratch for a YT channel','video','assets/video/ukraine-show.mp4',['assets/img/ukraine-preview-main.png','assets/img/ukraine-extra.jpg'])">
+           onclick="openModal('&quot;made in ukraine&quot; show','show / sound design','sound design and recording of live instruments from scratch for a YT channel','youtube','nO0oUw6Mp50',['assets/img/ukraine-preview-main.png','assets/img/ukraine-extra.jpg'])">
         <img class="project-thumb" src="assets/img/ukraine-preview-main.png" alt="Made in Ukraine">
         <div class="project-tile-title">"made in ukraine" show</div>
       </div>
@@ -810,9 +811,21 @@
       </div>
 
       <div class="project-tile fade-up"
-           onclick="openModal('other music','music / co-production','co-produced and recorded by me','spotify','https://open.spotify.com/embed/track/32UH904sMUmS66BmMyojUs?utm_source=generator&theme=0')">
+           onclick="openModal('other music','music / co-production','co-produced and recorded by me','spotify','https://open.spotify.com/embed/playlist/4KCVbUs3uknTvaSvf7Wn0E?utm_source=generator&theme=0')">
         <img class="project-thumb" src="assets/img/body-curve.jpg" alt="Other Music">
         <div class="project-tile-title">other music</div>
+      </div>
+
+      <div class="project-tile fade-up"
+           onclick="openModal('sound design for deus myth','sound designer / composer','worked on ui sounds, synchronous sound effects, ambience and spatial audio, as well as music, and also helped with integration in unity. unfortunately, i can\'t share other projects at the moment, as they are still covered by nda','youtube','XMcMUwAv2kM')">
+        <img class="project-thumb" src="assets/img/deus-myth-preview.jpg" alt="Deus Myth">
+        <div class="project-tile-title">sound design for deus myth</div>
+      </div>
+
+      <div class="project-tile fade-up"
+           onclick="openModal('sound designer for twitch game event &quot;MGE&quot;','sound designer','created ui sound effects, foley (synchronous sounds), and ambient audio. assisted with audio integration in unity and collaborated closely within a team environment.','youtube','0eTR0IQHbLo')">
+        <img class="project-thumb" src="assets/img/mge-preview.jpg" alt="MGE">
+        <div class="project-tile-title">sound designer for twitch game event "MGE"</div>
       </div>
 
       <div class="project-tile fade-up"
@@ -1303,8 +1316,8 @@
       const spotify = document.getElementById('modalSpotify');
       spotify.innerHTML = '';
       if (type === 'spotify') {
-        const isAlbum = src.includes('/album/');
-        spotify.innerHTML = '<iframe src="'+src+'" height="'+(isAlbum ? 352 : 152)+'" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
+        const isTall = src.includes('/album/') || src.includes('/playlist/');
+        spotify.innerHTML = '<iframe src="'+src+'" height="'+(isTall ? 352 : 152)+'" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
       }
 
       renderModalGallery(gallery || []);
@@ -1323,10 +1336,16 @@
         updateGalleryActive();
         return;
       }
+      if (viewMode === 'main' && origType === 'youtube') {
+        const ytSrc = 'https://www.youtube-nocookie.com/embed/'+origSrc+'?rel=0&modestbranding=1&color=white&iv_load_policy=3&playsinline=1';
+        container.innerHTML = '<div class="modal-media-wrap"><iframe class="modal-media" src="'+ytSrc+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
+        updateGalleryActive();
+        return;
+      }
       if (viewMode === 'image' && images.length) {
         const imgSrc = images[currentIdx];
         const showArrows = images.length > 1;
-        const showBackToMain = origType === 'video';
+        const showBackToMain = origType === 'video' || origType === 'youtube';
         let html = '<div class="modal-media-wrap">';
         html += '<img class="modal-media" src="'+imgSrc+'" alt="" onclick="modalZoom()">';
         if (showArrows) {
