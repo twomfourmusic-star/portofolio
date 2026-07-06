@@ -1802,6 +1802,20 @@
         const repo = await res.json();
         if (!repo.permissions || !repo.permissions.push)
           throw new Error('token is read-only — needs "contents: read and write"');
+        // /repos reports the USER's rights, not the token's grants — probe an
+        // actual write: PUT with a bogus sha returns 409 if we can write, 403 if not
+        const probe = await fetch(GH_API + '/contents/index.html', {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + t, 'Accept': 'application/vnd.github+json' },
+          body: JSON.stringify({
+            message: 'permission probe (never lands)',
+            content: '',
+            sha: '0000000000000000000000000000000000000000',
+            branch: GH_BRANCH
+          })
+        });
+        if (probe.status === 403 || probe.status === 404)
+          throw new Error('token can\'t write — set "contents" to "read and write" in its settings');
         localStorage.setItem('gh_edit_token', t);
         document.getElementById('admTokenInput').value = '';
         admSetLoginStatus('');
@@ -2024,6 +2038,7 @@
         headers: admHeaders(),
         body: JSON.stringify({ message: 'edit: upload ' + name, content: b64, branch: GH_BRANCH })
       });
+      if (res.status === 403) throw new Error('403 — token can\'t write (contents: read and write)');
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return 'assets/img/' + name;
     }
@@ -2044,6 +2059,7 @@
           headers: admHeaders(),
           body: JSON.stringify(body)
         });
+        if (res.status === 403) throw new Error('403 — token can\'t write (contents: read and write)');
         if (res.status === 409) throw new Error('conflict — someone else saved; reload the page and redo');
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
