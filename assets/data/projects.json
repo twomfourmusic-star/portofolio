@@ -15,7 +15,10 @@
     "type": "youtube",
     "src": "nO0oUw6Mp50",
     "thumb": "assets/img/ukraine-preview-main.png",
-    "gallery": ["assets/img/ukraine-preview-main.png", "assets/img/ukraine-extra.jpg"]
+    "gallery": [
+      "assets/img/ukraine-preview-main.png",
+      "assets/img/ukraine-extra.jpg"
+    ]
   },
   {
     "title": "travel show kamon",
@@ -24,7 +27,10 @@
     "type": "img",
     "src": "assets/img/kamon-preview.jpg",
     "thumb": "assets/img/kamon-preview.jpg",
-    "gallery": ["assets/img/kamon.jpg", "assets/img/kamon-2.jpg"]
+    "gallery": [
+      "assets/img/kamon.jpg",
+      "assets/img/kamon-2.jpg"
+    ]
   },
   {
     "title": "EP \"musik electronique\"",
@@ -70,5 +76,17 @@
     "src": "",
     "thumb": "assets/img/sounds-bg.png",
     "gallery": []
+  },
+  {
+    "title": "test zalupa",
+    "tag": "sfx",
+    "desc": "влад гей дрочит мне жопу",
+    "type": "none",
+    "src": "",
+    "thumb": "assets/img/photo-2025-12-20-19-03-30.jpg",
+    "gallery": [
+      "assets/img/photo-2026-01-22-15-04-04.jpg",
+      "assets/img/photo-2026-01-22-15-04-04-1.jpg"
+    ]
   }
 ]
