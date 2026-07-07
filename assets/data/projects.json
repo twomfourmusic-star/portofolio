@@ -1,17 +1,5 @@
 [
   {
-    "title": "test zalupa",
-    "tag": "sfx",
-    "desc": "влад гей дрочит мне жопу",
-    "type": "spotify",
-    "src": "https://open.spotify.com/embed/track/3DjECCbbT8olw8EOqaZNZ1?utm_source=generator&theme=0&si=838051566ae94939",
-    "thumb": "assets/img/photo-2025-12-20-19-03-30.jpg",
-    "gallery": [
-      "assets/img/photo-2026-01-22-15-04-04.jpg",
-      "assets/img/photo-2026-01-22-15-04-04-1.jpg"
-    ]
-  },
-  {
     "title": "dubbing & editing for amopictures",
     "tag": "sound design / dubbing",
     "desc": "handled lip-sync, audio mixing, synchronized sound design, and mastering. participated in the production of approximately 15 short films. this is one of them.",
@@ -88,5 +76,16 @@
     "src": "",
     "thumb": "assets/img/sounds-bg.png",
     "gallery": []
+  },
+  {
+    "title": "test zalupa",
+    "tag": "sfx",
+    "desc": "спасибо япро",
+    "type": "spotify",
+    "src": "https://open.spotify.com/embed/track/3DjECCbbT8olw8EOqaZNZ1?utm_source=generator&theme=0&si=838051566ae94939",
+    "thumb": "assets/img/photo-2025-12-20-19-03-30.jpg",
+    "gallery": [
+      "assets/img/photo-2026-01-22-15-04-04.jpg"
+    ]
   }
 ]
