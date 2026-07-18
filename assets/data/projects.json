@@ -76,16 +76,5 @@
     "src": "",
     "thumb": "assets/img/sounds-bg.png",
     "gallery": []
-  },
-  {
-    "title": "test zalupa",
-    "tag": "sfx",
-    "desc": "спасибо япро",
-    "type": "spotify",
-    "src": "https://open.spotify.com/embed/track/3DjECCbbT8olw8EOqaZNZ1?utm_source=generator&theme=0&si=838051566ae94939",
-    "thumb": "assets/img/photo-2025-12-20-19-03-30.jpg",
-    "gallery": [
-      "assets/img/photo-2026-01-22-15-04-04.jpg"
-    ]
   }
 ]
