@@ -9,18 +9,6 @@
     "gallery": []
   },
   {
-    "title": "\"made in ukraine\" show",
-    "tag": "show / sound design",
-    "desc": "sound design and recording of live instruments from scratch for a YT channel",
-    "type": "youtube",
-    "src": "nO0oUw6Mp50",
-    "thumb": "assets/img/ukraine-preview-main.png",
-    "gallery": [
-      "assets/img/ukraine-preview-main.png",
-      "assets/img/ukraine-extra.jpg"
-    ]
-  },
-  {
     "title": "travel show kamon",
     "tag": "sound / music editing",
     "desc": "complete sound and music editing for 62 episodes of the show for the WE UA PLUS channel; served as music editor and sound engineer. mixing and mastering to EBU128 standards",
@@ -33,21 +21,12 @@
     ]
   },
   {
-    "title": "EP \"musik electronique\"",
-    "tag": "music / production",
-    "desc": "all songs arranging, recording, and co-mixing by me",
-    "type": "spotify",
-    "src": "https://open.spotify.com/embed/album/3CmgcfkNiIE9c4XPkhsDQI?utm_source=generator&theme=0",
-    "thumb": "assets/img/musik-cover.jpg",
-    "gallery": []
-  },
-  {
-    "title": "other music",
-    "tag": "music / co-production",
-    "desc": "co-produced and recorded by me",
-    "type": "spotify",
-    "src": "https://open.spotify.com/embed/playlist/4KCVbUs3uknTvaSvf7Wn0E?utm_source=generator&theme=0",
-    "thumb": "assets/img/body-curve.jpg",
+    "title": "sound design & music for twitch game event \"MGE\"",
+    "tag": "sound designer",
+    "desc": "created ui sound effects, foley (synchronous sounds), and ambient audio. assisted with audio integration in unity and collaborated closely within a team environment.",
+    "type": "youtube",
+    "src": "0eTR0IQHbLo",
+    "thumb": "assets/img/mge-preview.jpg",
     "gallery": []
   },
   {
@@ -60,12 +39,33 @@
     "gallery": []
   },
   {
-    "title": "sound designer for twitch game event \"MGE\"",
-    "tag": "sound designer",
-    "desc": "created ui sound effects, foley (synchronous sounds), and ambient audio. assisted with audio integration in unity and collaborated closely within a team environment.",
+    "title": "EP \"musik electronique\"",
+    "tag": "music / production",
+    "desc": "all songs arranging, recording, and co-mixing by me",
+    "type": "spotify",
+    "src": "https://open.spotify.com/embed/album/3CmgcfkNiIE9c4XPkhsDQI?utm_source=generator&theme=0",
+    "thumb": "assets/img/musik-cover.jpg",
+    "gallery": []
+  },
+  {
+    "title": "\"made in ukraine\" show",
+    "tag": "show / sound design",
+    "desc": "sound design and recording of live instruments from scratch for a YT channel",
     "type": "youtube",
-    "src": "0eTR0IQHbLo",
-    "thumb": "assets/img/mge-preview.jpg",
+    "src": "nO0oUw6Mp50",
+    "thumb": "assets/img/ukraine-preview-main.png",
+    "gallery": [
+      "assets/img/ukraine-preview-main.png",
+      "assets/img/ukraine-extra.jpg"
+    ]
+  },
+  {
+    "title": "other music",
+    "tag": "music / co-production",
+    "desc": "co-produced and recorded by me",
+    "type": "spotify",
+    "src": "https://open.spotify.com/embed/playlist/4KCVbUs3uknTvaSvf7Wn0E?utm_source=generator&theme=0",
+    "thumb": "assets/img/body-curve.jpg",
     "gallery": []
   },
   {
