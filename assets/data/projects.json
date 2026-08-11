@@ -9,6 +9,15 @@
     "gallery": []
   },
   {
+    "title": "sound design & music for twitch game event \"MGE\"",
+    "tag": "sound designer",
+    "desc": "created ui sound effects, foley (synchronous sounds), and ambient audio. assisted with audio integration in unity and collaborated closely within a team environment.",
+    "type": "youtube",
+    "src": "0eTR0IQHbLo",
+    "thumb": "assets/img/mge-preview.jpg",
+    "gallery": []
+  },
+  {
     "title": "travel show kamon",
     "tag": "sound / music editing",
     "desc": "complete sound and music editing for 62 episodes of the show for the WE UA PLUS channel; served as music editor and sound engineer. mixing and mastering to EBU128 standards",
@@ -21,13 +30,16 @@
     ]
   },
   {
-    "title": "sound design & music for twitch game event \"MGE\"",
-    "tag": "sound designer",
-    "desc": "created ui sound effects, foley (synchronous sounds), and ambient audio. assisted with audio integration in unity and collaborated closely within a team environment.",
+    "title": "sound design & music for slot",
+    "tag": "sfx & music",
+    "desc": "i created the core sound design and two original music themes. the main game features a groovy hip-hop loop that shifts into an energetic metal-inspired track during the bonus game, creating a stronger sense of progression and excitement. i focused on key gameplay moments, using layered sound design and Foley to add weight, clarity, and authenticity. the project included train movement, the devil feature, bonus wheel interactions, transitions, and win effects",
     "type": "youtube",
-    "src": "0eTR0IQHbLo",
-    "thumb": "assets/img/mge-preview.jpg",
-    "gallery": []
+    "src": "OXWiVNeTotY",
+    "thumb": "assets/img/photo-2026-07-08-00-49-29.jpg",
+    "gallery": [
+      "assets/img/photo-2026-07-07-23-19-17.jpg",
+      "assets/img/photo-2026-07-07-23-21-01.jpg"
+    ]
   },
   {
     "title": "sound design for deus myth",
@@ -76,17 +88,5 @@
     "src": "",
     "thumb": "assets/img/sounds-bg.png",
     "gallery": []
-  },
-  {
-    "title": "sound design & music for slot",
-    "tag": "sfx & music",
-    "desc": "i created the core sound design and two original music themes. the main game features a groovy hip-hop loop that shifts into an energetic metal-inspired track during the bonus game, creating a stronger sense of progression and excitement. i focused on key gameplay moments, using layered sound design and Foley to add weight, clarity, and authenticity. the project included train movement, the devil feature, bonus wheel interactions, transitions, and win effects",
-    "type": "youtube",
-    "src": "OXWiVNeTotY",
-    "thumb": "assets/img/photo-2026-07-08-00-49-29.jpg",
-    "gallery": [
-      "assets/img/photo-2026-07-07-23-19-17.jpg",
-      "assets/img/photo-2026-07-07-23-21-01.jpg"
-    ]
   }
 ]
